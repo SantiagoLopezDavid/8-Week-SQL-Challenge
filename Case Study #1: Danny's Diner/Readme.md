@@ -213,3 +213,67 @@ ORDER BY customer_id
 - The item that customer B purchased just before becoming a member was Sushi.
 
 ---
+
+**8. What is the total items and amount spent for each member before they became a member?**
+```sql
+SELECT customer_id, SUM(price) AS total_spent FROM
+	(SELECT s.customer_id, order_date, s.product_id, price
+	FROM sales s
+	JOIN members m ON s.customer_id = m.customer_id
+	JOIN menu ON menu.product_id = s.product_id
+	WHERE order_date < join_date
+	ORDER BY s.customer_id) AS x
+GROUP BY customer_id
+```
+**Explanation:**
+
+
+**Results and Analysis:**
+
+|customer_id|total_spent|
+|---|---|
+|A|25|
+|B|40|
+
+- Customer A has spent a total of $25 before becoming a member.
+- Customer B has spent a total of $40 before becoming a member.
+
+---
+
+**9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?**
+```sql
+SELECT customer_id,
+SUM(CASE 
+	WHEN product_name = 'sushi' THEN price* 20
+	ELSE price*10
+	END) AS total_points
+FROM sales
+JOIN menu ON menu.product_id = sales.product_id
+GROUP BY customer_id
+ORDER BY customer_id
+```
+**Explanation:**
+
+
+**Results and Analysis:**
+|customer_id|total_points|
+|---|---|
+|A|860|
+|B|940|
+|C|360|
+
+- Customer A has a total of 860 points based on his/hers expenses.
+- Customer B has a total of 940 points based on his/hers expenses.
+- Customer C has a total of 360 points based on his/hers expenses.
+
+---
+
+
+
+
+
+
+
+
+
+
