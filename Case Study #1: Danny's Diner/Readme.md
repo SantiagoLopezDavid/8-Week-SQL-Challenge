@@ -85,8 +85,8 @@ For this question, multiple `customer_id` could have bought more than one item i
 
 **Explanation:**
 
-- We will the subquery `x` to create a new column `rnk` and calculate the row number using **DENSE_RANK()** window function. The **PARTITION BY** clause divides the data by `customer_id`, and the **ORDER BY** clause orders the rows within each partition by `order_date`.
-- In the main query we will **SELECT** the desire columns and use the **WHERE** clause to filter the data by only those row with a `rnk = 1`.
+- Create a subquery named `x` to create a new column `rnk` and calculate the row number using **DENSE_RANK()** window function. The **PARTITION BY** clause divides the data by `customer_id`, and the **ORDER BY** clause orders the rows within each partition by `order_date`.
+- In the main query use **SELECT** the desire columns and use the **WHERE** clause to filter the data by only those rows with a `rnk = 1`.
 - Use the **GROUP BY** clause to group the result by `customer_id` and `product_name`.
 
 **Results and Analysis:**
@@ -110,12 +110,12 @@ SELECT sales.product_id, product_name, COUNT(*) AS count_purchases
 FROM sales 
 JOIN menu ON sales.product_id = menu.product_id
 GROUP BY sales.product_id, product_name
-ORDER BY COUNT(*) DESC
+ORDER BY count_purchases DESC
 LIMIT 1
 ```
 **Explanation:**
--
--
+- Use a **COUNT** aggregation on all rows and use a **GROUP BY** clause with `sales.product_id` and `product_name` to narrow the count.
+- Order `count_purchases` in descending order and apply **LIMIT 1** clause to filter and retrieve the highest number of purchased items.
 
 **Results and Analysis:**
 |product_id|product_name|count_purchases|
@@ -126,17 +126,38 @@ LIMIT 1
 
 ---
 
+**5. Which item was the most popular for each customer?**
+```sql
+SELECT customer_id, product_name, count_product FROM
+	(SELECT customer_id,product_id,count(product_id) as count_product,
+	RANK() OVER(PARTITION BY customer_id ORDER BY COUNT(product_id) DESC) AS rnk
+	FROM sales
+	GROUP BY customer_id, product_id
+	ORDER BY customer_id, COUNT(product_id)) AS x
+JOIN menu ON menu.product_id = x.product_id
+WHERE rnk = 1
+ORDER BY customer_id, count_product
+
+```
+**Explanation:**
+- Create a subquery named `x`, and within this subquery use a **COUNT()** aggregation on `product_id` and utilize the **RANK()** function to calculate the ranking of each `customer_id` partition based on **COUNT(product_id)** in descending order.
+- In the main query **JOIN** the tables `x` and `menu` on the `product_id` column.
+- Filter the resulting table using the **WHERE** clause by only those rows with a `rnk = 1`
+- 
+**Results and Analysis:**
+|customer_id|product_name|count_product|
+|---|---|---|
+|A|ramen|3|
+|B|sushi|2|
+|B|curry|2|
+|B|ramen|2|
+|C|ramen|3|
 
 
+- Customers A and C share Ramen as their favorite product of the menu. Each with 3 counts.
+- Customer B has order all items in the menu an equal number or times.
 
-
-
-
-
-
-
-
-
+---
 
 
 
