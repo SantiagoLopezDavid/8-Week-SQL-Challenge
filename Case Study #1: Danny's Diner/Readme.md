@@ -53,7 +53,7 @@ FROM sales
 GROUP BY customer_id;
 ```
 **Explanation:**
-- From the `sales` table, we can use the column `order_date` as an indicator for visits. But we are only interested in counting each day once, we don't want that multiple orders to count as two different visits.
+- From the `sales` table, we can use the column `order_date` as an indicator for visits. But we are only interested in counting each day once, we don't want multiple orders to count as two different visits.
 - For this purpose we can use **COUNT(DISTINCT `order_date`)**
 
 **Results and Analysis:**
@@ -81,7 +81,7 @@ GROUP BY customer_id, product_name
 ```
 **Asumptions:**
 
-For this question, multiple `customer_id` could have bought more than one item in their fisrt visit. There is not a way of knowing which one was first based on the dataset provided. As a result we could have multiple `product_name` for each `customer_id`.
+For this question, multiple `customer_id` could have bought more than one item in their first visit. There is not a way of knowing which one was first based on the dataset provided. As a result we could have multiple `product_name` for each `customer_id`.
 
 **Explanation:**
 
@@ -158,9 +158,58 @@ ORDER BY customer_id, count_product
 - Customer B has order all items in the menu an equal number or times.
 
 ---
+**6. Which item was purchased first by the customer after they became a member?**
+```sql
+SELECT customer_id, order_date, product_name, join_date from
+	(SELECT s.customer_id, order_date, product_id, join_date,
+	RANK() OVER (PARTITION BY s.customer_id ORDER BY order_date - join_date) AS rnk
+	FROM sales s
+	JOIN members m ON s.customer_id = m.customer_id
+	WHERE order_date - join_date > 0 ) AS x
+JOIN menu ON x.product_id = menu.product_id
+WHERE rnk = 1
+ORDER BY customer_id
+```
+**Explanation:**
 
 
+**Results and Analysis:**
+
+|customer_id|order_date|product_name|join_date|
+|---|---|---|---|
+|A|2021-01-10|ramen|2021-01-07|
+|B|2021-01-11|sushi|2021-01-09|
+
+- The first product that the customer A purchased after becoming a member was Ramen.
+- The first product that the customer B purchased after becoming a member was Sushi.
+  
+---
+
+**7. Which item was purchased just before the customer became a member?**
+```sql
+SELECT customer_id, order_date, product_name, join_date FROM
+	(SELECT s.customer_id, order_date, product_id, join_date,
+	order_date - join_date AS date_diff,
+	RANK() OVER (PARTITION BY s.customer_id ORDER BY order_date - join_date DESC) AS rnk
+	FROM sales s
+	JOIN members m ON s.customer_id = m.customer_id
+	WHERE order_date - join_date < 0) AS x
+JOIN menu ON x.product_id = menu.product_id
+WHERE rnk = 1
+ORDER BY customer_id
+```
+**Explanation:**
 
 
+**Results and Analysis:**
 
+|customer_id|oder_date|product_name|join_date|
+|---|---|---|---|
+|A|2021-01-01|sushi|2021-01-07|
+|A|2021-01-01|curry|2021-01-07|
+|B|2021-01-04|sushi|2021-01-09|
 
+- The items that customer A purchased just before becoming a member were Sushi and Curry.
+- The item that customer B purchased just before becoming a member was Sushi.
+
+---
