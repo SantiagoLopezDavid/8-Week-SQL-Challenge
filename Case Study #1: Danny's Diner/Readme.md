@@ -203,7 +203,11 @@ WHERE rnk = 1
 ORDER BY customer_id
 ```
 **Explanation:**
-
+- Create a subquery named `x` and within this subquery use a **RANK()** window function. The **PARTITION BY** clause divides the data by `customer_id` and the **ORDER BY** clause orders the rows within each partition by the difference between `order_date` and `join_date` in descending order.
+- The target value for `rnk` is the closest negative value to the `join_date` or cero.
+- Filter the resulting table of the subquery using the **WHERE** clause by only those rows with a negative result of the difference between `order_date` and `join_date`.
+- In the main query **JOIN** the subquery `x` and the table `menu`.
+- Finally filter by `rnk = 1` and order result by `customer_id` in ascending order.
 
 **Results and Analysis:**
 
@@ -220,7 +224,7 @@ ORDER BY customer_id
 
 **8. What is the total items and amount spent for each member before they became a member?**
 ```sql
-SELECT customer_id, SUM(price) AS total_spent FROM
+SELECT customer_id, COUNT(*) AS total_items, SUM(price) AS total_spent FROM
 	(SELECT s.customer_id, order_date, s.product_id, price
 	FROM sales s
 	JOIN members m ON s.customer_id = m.customer_id
@@ -230,14 +234,17 @@ SELECT customer_id, SUM(price) AS total_spent FROM
 GROUP BY customer_id
 ```
 **Explanation:**
-
+- Create a subquery named `x` and within this subquery **JOIN** the table `sales` with `members` on the `customer_id` and with the table `menu` on the `product_id`. This is done to get the columns `price` and the `join_date`.
+- Filter the resulting table of the subquery using the **WHERE** clause by only those rows where the `order_date` is lower than `join_date`. The '<' operator could be interpreted as 'before than' in this case as the data type is a date.
+- In the main query use the **GROUP BY** clause with `customer_id` as the results has to be view per customer.
+- Use the aggregate functions **COUNT()** and **SUM()** to calculate the `total_items` and `total_spent` per customer.
 
 **Results and Analysis:**
 
-|customer_id|total_spent|
-|---|---|
-|A|25|
-|B|40|
+|customer_id|total_items|total_spent|
+|---|---|---|
+|A|2|25|
+|B|3|40|
 
 - Customer A has spent a total of $25 before becoming a member.
 - Customer B has spent a total of $40 before becoming a member.
@@ -256,8 +263,17 @@ JOIN menu ON menu.product_id = sales.product_id
 GROUP BY customer_id
 ORDER BY customer_id
 ```
-**Explanation:**
 
+**Asumptions**
+- In order to answer this questions. We must understand the point system set by the restaurant.
+- For each $1 spent, the customer will receive 10 points. If an item of the menu has a price of $10, a customer who buys this item will have 100 points added to their account.
+- In the case that a customer buys 'Sushi', this customer will receive double the points per $1 spent. 'Sushi' has a price set at $10. Any customer buying 'Sushi' will receive 10 * 2 * 10 = 200 points.
+  
+**Explanation:**
+- Using a **CASE** statement set a condition for `product_name = 'sushi` that will multiply `price` by 20 (double the points per $1 spent).
+- In any other case, the `price` will be multiply by 10 (10 points per $1 spent)
+- Use the **JOIN** clause with `sales` and `menu` on the `product_id`.
+- And finally use the **GROUP BY** and the **ORDER BY** clause with `customer_id`.
 
 **Results and Analysis:**
 |customer_id|total_points|
@@ -276,20 +292,33 @@ ORDER BY customer_id
 
 ```sql
 SELECT customer_id, SUM(total_points) AS total_points FROM
-	(SELECT s.customer_id,
+	(SELECT s.customer_id, order_date, join_date, price, product_name,
 	CASE 
 		WHEN order_date BETWEEN join_date AND join_date+7 THEN price* 20
+	 	WHEN product_name = 'sushi' THEN price* 20
 		ELSE price*10
 		END AS total_points
 	FROM sales s
 	JOIN menu ON menu.product_id = s.product_id
 	JOIN members m ON m.customer_id = s.customer_id
-	WHERE order_date < '2021-01-30') AS x
+	WHERE order_date < '2021-01-30'
+	order by customer_id,order_date) AS x
 GROUP BY customer_id
 ORDER BY customer_id
 ```
-**Explanation:**
+**Asumptions**
+- In order to answer this questions. We must understand the point system set by the restaurant and the changes made in this question.
+- Taking into account the `join_date`, customers will have double points for their any of their purchases for 7 days or a week after this day.
+- Points will be given in the standard way before the `join_date` and after `join_date + 7`.
+- The restaurant is only interested in the `total_points` for the customers before the end of **January**('2021-01-20').
 
+**Explanation:**
+- Using a **CASE** statement set a condition for `order_date` between the `join_date` and `join_date + 7` that will multiply `price` by 20 (double the points per $1 spent).
+- Set another condition for `product_name = 'sushi` that will multiply `price` by 20 (double the points per $1 spent).
+- In any other case, the `price` will be multiply by 10 (10 points per $1 spent)
+- Use the **JOIN** clause with `sales` and `menu` on the `product_id` and `members` on `customer_id`.
+- Filter the resulting table of the subquery using the **WHERE** clause by only those rows where the `order_date < '2021-01-30'`.
+- And finally use the **GROUP BY** and the **ORDER BY** clause with `customer_id`.
 
 **Results and Analysis:**
 |customer_id|total_points|
