@@ -268,12 +268,120 @@ ORDER BY customer_id
 
 ---
 
+**10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?**
+
+```sql
+SELECT customer_id, SUM(total_points) AS total_points FROM
+	(SELECT s.customer_id,
+	CASE 
+		WHEN order_date BETWEEN join_date AND join_date+7 THEN price* 20
+		ELSE price*10
+		END AS total_points
+	FROM sales s
+	JOIN menu ON menu.product_id = s.product_id
+	JOIN members m ON m.customer_id = s.customer_id
+	WHERE order_date < '2021-01-30') AS x
+GROUP BY customer_id
+ORDER BY customer_id
+```
+**Explanation:**
 
 
+**Results and Analysis:**
+|customer_id|total_points|
+|---|---|
+|A|1270|
+|B|840|
+
+- Customer A has a total of 860 points based on his/hers expenses.
+- Customer B has a total of 940 points based on his/hers expenses.
+
+---
+## Bonus Questions
+**Join All The Things**
+
+Create a table with: customer_id, order_date, product_name, price, member (Y/N)
+
+```sql
+SELECT s.customer_id, order_date, product_name, price,
+CASE
+	WHEN order_date < join_date THEN 'N'
+	WHEN order_date >= join_date THEN 'Y'
+	ELSE 'N'
+	END AS member
+FROM sales s
+LEFT JOIN menu m ON m.product_id = s.product_id
+LEFT JOIN members mem ON mem.customer_id = s.customer_id
+ORDER BY customer_id, order_date
+```
+**Explanation:**
 
 
+**Results and Analysis:**
+|customer_id|order_date|product_name|price|member|
+|---|---|---|---|---|
+|A|2021-01-01|sushi|10|N|
+|A|2021-01-01|curry|15|N|
+|A|2021-01-07|curry|15|Y|
+|A|2021-01-10|ramen|12|Y|
+|A|2021-01-11|ramen|12|Y|
+|A|2021-01-11|ramen|12|Y|
+|B|2021-01-01|curry|15|N|
+|B|2021-01-02|curry|15|N|
+|B|2021-01-04|sushi|10|N|
+|B|2021-01-11|sushi|10|Y|
+|B|2021-01-16|ramen|12|Y|
+|B|2021-02-01|ramen|12|Y|
+|C|2021-01-01|ramen|12|N|
+|C|2021-01-01|ramen|12|N|
+|C|2021-01-07|ramen|12|N|
+
+---
+
+**Rank All The Things***
+
+Danny also requires further information about the `ranking` of customer products, but he purposely does not need the `ranking` for non-member purchases so he expects null `ranking` values for the records when customers are not yet part of the loyalty program.
+
+```sql
+WITH cte AS 
+	(SELECT s.customer_id, order_date, product_name, price,
+	CASE
+		WHEN order_date < join_date THEN 'N'
+		WHEN order_date >= join_date THEN 'Y'
+		ELSE 'N'
+		END AS member
+	FROM sales s
+	LEFT JOIN menu m ON m.product_id = s.product_id
+	LEFT JOIN members mem ON mem.customer_id = s.customer_id
+	ORDER BY customer_id, order_date)
+SELECT *, 
+CASE
+	WHEN member = 'N' THEN NULL
+   	ELSE RANK() OVER(PARTITION BY customer_id, member ORDER BY order_date) 
+	END AS ranking
+FROM cte;
+```
+**Explanation:**
 
 
+**Results and Analysis:**
+|customer_id|order_date|product_name|price|member|ranking|
+|---|---|---|---|---|---|
+|A|2021-01-01|sushi|10|N|NULL|
+|A|2021-01-01|curry|15|N|NULL|
+|A|2021-01-07|curry|15|Y|1|
+|A|2021-01-10|ramen|12|Y|2|
+|A|2021-01-11|ramen|12|Y|3|
+|A|2021-01-11|ramen|12|Y|3|
+|B|2021-01-01|curry|15|N|NULL|
+|B|2021-01-02|curry|15|N|NULL|
+|B|2021-01-04|sushi|10|N|NULL|
+|B|2021-01-11|sushi|10|Y|1|
+|B|2021-01-16|ramen|12|Y|2|
+|B|2021-02-01|ramen|12|Y|3|
+|C|2021-01-01|ramen|12|N|NULL|
+|C|2021-01-01|ramen|12|N|NULL|
+|C|2021-01-07|ramen|12|N|NULL|
 
 
 
