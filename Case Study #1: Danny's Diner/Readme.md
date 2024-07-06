@@ -310,7 +310,7 @@ ORDER BY customer_id
 - In order to answer this question, we must understand the point system set by the restaurant and the changes made for this question.
 - Taking into account the `join_date`, customers will have double points for any of their purchases for 7 days / 1 week after this day.
 - Points will be given in the standard way before the `join_date` and after `join_date + 7`.
-- The restaurant is only interested in the `total_points` for the customers before the end of **January**('2021-01-20').
+- The restaurant is only interested in the `total_points` for the customers before the end of **January** ('2021-01-20').
 
 **Explanation:**
 - Using a **CASE** statement set a condition for `order_date` between the `join_date` and `join_date + 7` that will multiply `price` by 20 (double the points per $1 spent).
@@ -321,6 +321,7 @@ ORDER BY customer_id
 - And finally use the **GROUP BY** and the **ORDER BY** clause with `customer_id`.
 
 **Results and Analysis:**
+
 |customer_id|total_points|
 |---|---|
 |A|1270|
