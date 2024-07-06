@@ -265,8 +265,8 @@ ORDER BY customer_id
 ```
 
 **Asumptions**
-- In order to answer this questions. We must understand the point system set by the restaurant.
-- For each $1 spent, the customer will receive 10 points. If an item of the menu has a price of $10, a customer who buys this item will have 100 points added to their account.
+- In order to answer this question, we must understand the point system set by the restaurant.
+- For each $1 spent, the customer will receive 10 points. If an item of the menu has a price of $10, a customer who buys it will have 100 points added to their account.
 - In the case that a customer buys 'Sushi', this customer will receive double the points per $1 spent. 'Sushi' has a price set at $10. Any customer buying 'Sushi' will receive 10 * 2 * 10 = 200 points.
   
 **Explanation:**
@@ -307,8 +307,8 @@ GROUP BY customer_id
 ORDER BY customer_id
 ```
 **Asumptions**
-- In order to answer this questions. We must understand the point system set by the restaurant and the changes made in this question.
-- Taking into account the `join_date`, customers will have double points for their any of their purchases for 7 days or a week after this day.
+- In order to answer this question, we must understand the point system set by the restaurant and the changes made for this question.
+- Taking into account the `join_date`, customers will have double points for any of their purchases for 7 days / 1 week after this day.
 - Points will be given in the standard way before the `join_date` and after `join_date + 7`.
 - The restaurant is only interested in the `total_points` for the customers before the end of **January**('2021-01-20').
 
