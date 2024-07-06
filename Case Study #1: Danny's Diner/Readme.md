@@ -171,7 +171,11 @@ WHERE rnk = 1
 ORDER BY customer_id
 ```
 **Explanation:**
-
+- Create a subquery named `x` and within this subquery use a **RANK()** window function. The **PARTITION BY** clause divides the data by `customer_id` and the **ORDER BY** clause orders the rows within each partition by the difference between `order_date` and `join_date`.
+- The difference between these two dates will give produce an `int` which a lower positive value means a closer `oder_date` to the `join_date`.
+- Filter the resulting table of the subquery using the **WHERE** clause by only those rows with a positive result of the difference between `order_date` and `join_date`.
+- In the main query **JOIN** the subquery `x` and the table `menu`.
+- Finally filter by `rnk = 1` and order result by `customer_id` in ascending order.
 
 **Results and Analysis:**
 
