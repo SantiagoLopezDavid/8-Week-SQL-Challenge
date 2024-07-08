@@ -349,7 +349,9 @@ LEFT JOIN members mem ON mem.customer_id = s.customer_id
 ORDER BY customer_id, order_date
 ```
 **Explanation:**
-
+- Using a **CASE** statement set two conditions for `order_date` and `join_date`. If the `order_date < join_date` then set `member` to 'N'. And if the `order_date >= join_date` then `member` is 'Y'.
+- **JOIN** the table `sales` with `menu` to get the `product_name` and `price`. And **JOIN** with the `members` table to get the `join_date`.
+- Finally **ORDER BY** the `customer_id` and the `order_date`
 
 **Results and Analysis:**
 |customer_id|order_date|product_name|price|member|
@@ -396,7 +398,8 @@ CASE
 FROM cte;
 ```
 **Explanation:**
-
+- Create a **CTE** with the last question query.
+- Then using a **CASE** statement set a first condition for any `member = 'N'` will have `ranking` as **NULL**. Then use the **RANK()** window function. Set **PARTITION BY** based on the `customer_id` and **ORDER BY** the `order_date`. This will result in a ranking for the `order_date` after the `customer_id` became an active member.
 
 **Results and Analysis:**
 |customer_id|order_date|product_name|price|member|ranking|
