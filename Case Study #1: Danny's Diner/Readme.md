@@ -399,7 +399,9 @@ FROM cte;
 ```
 **Explanation:**
 - Create a **CTE** with the last question query.
-- Then using a **CASE** statement set a first condition for any `member = 'N'` will have `ranking` as **NULL**. Then use the **RANK()** window function. Set **PARTITION BY** based on the `customer_id` and **ORDER BY** the `order_date`. This will result in a ranking for the `order_date` after the `customer_id` became an active member.
+- Add an additional column to the table name `ranking` using a **CASE** statement.
+- Set a first condition for any `member = 'N'` will have `ranking` as **NULL**.
+- Then use the **RANK()** window function. Set **PARTITION BY** based on the `customer_id` and **ORDER BY** the `order_date`. This will result in a ranking for the `order_date` after the `customer_id` became an active member.
 
 **Results and Analysis:**
 |customer_id|order_date|product_name|price|member|ranking|
@@ -420,5 +422,4 @@ FROM cte;
 |C|2021-01-01|ramen|12|N|NULL|
 |C|2021-01-07|ramen|12|N|NULL|
 
-
-
+---
