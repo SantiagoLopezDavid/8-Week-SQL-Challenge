@@ -108,6 +108,56 @@ ALTER COLUMN duration TYPE INT USING duration::INTEGER;
 ---
 ### Pizza Metrics
 
+**1. How many pizzas were ordered?**
+
+**Explanation:**
+**Results and Analysis:**
+
+**2. How many unique customer orders were made?**
+
+**Explanation:**
+**Results and Analysis:**
+
+**3. How many successful orders were delivered by each runner?**
+
+**Explanation:**
+**Results and Analysis:**
+
+**4. How many of each type of pizza was delivered?**
+
+**Explanation:**
+**Results and Analysis:**
+
+**5. How many Vegetarian and Meatlovers were ordered by each customer?**
+
+**Explanation:**
+**Results and Analysis:**
+
+**6. What was the maximum number of pizzas delivered in a single order?**
+
+**Explanation:**
+**Results and Analysis:**
+
+**7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?**
+
+**Explanation:**
+**Results and Analysis:**
+
+**8. How many pizzas were delivered that had both exclusions and extras?**
+
+**Explanation:**
+**Results and Analysis:**
+
+**9. What was the total volume of pizzas ordered for each hour of the day?**
+
+**Explanation:**
+**Results and Analysis:**
+
+**10. What was the volume of orders for each day of the week?**
+
+**Explanation:**
+**Results and Analysis:**
+
 ---
 ### Runner and Customer Experience
 
