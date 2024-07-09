@@ -196,18 +196,111 @@ GROUP BY ct.pizza_id, pizza_name;
 
 **5. How many Vegetarian and Meatlovers were ordered by each customer?**
 
-**Explanation:**
-**Results and Analysis:**
+```sql
+SELECT customer_id, 
+coalesce(sum( case
+	when pizza_id = 1 then 1
+	end),0) as count_meatlovers,
+coalesce(sum( case
+	when pizza_id = 2 then 1
+	end),0) as count_vegetarian
+FROM customer_orders_temp
+group by customer_id
+order by customer_id;
+```
 
+**Explanation:**
+- Using a **CASE** statement set a condition for `pizza_id = 1` (Meatlovers), then set a value of 1 for that row.
+- Using a **SUM** aggregate function will get the total of `pizza_id = 1`. And in case if the `customer_id` hasn't order a type of pizza, we can use the **COALESCE** function to set the value to 0 instead of it being NULL.
+- To create a column for Vegetarian pizza, used the same code but change the condition to `pizza_id = 2`.
+- Use a **GROUP BY** clause by `customer_id`.
+  
+**Results and Analysis:**
+|customer_id|count_meatlovers|count_vegetarian|
+|---|---|---|
+|101|2|1|
+|102|2|1|
+|103|3|1|
+|104|3|0|
+|105|0|1|
+
+- Customer with id 101, has ordered a total of 2 Meatlovers pizzas and 1 Vegetarian.
+- Customer with id 102, has ordered a total of 2 Meatlovers pizzas and 1 Vegetarian.
+- Customer with id 103, has ordered a total of 3 Meatlovers pizzas and 1 Vegetarian.
+- Customer with id 104, has ordered a total of 3 Meatlovers pizzas and 0 Vegetarian.
+- Customer with id 105, has ordered a total of 0 Meatlovers pizzas and 1 Vegetarian.
+  
 **6. What was the maximum number of pizzas delivered in a single order?**
+```sql
+SELECT order_id, count_pizzas
+FROM 
+	(SELECT order_id, COUNT(pizza_id) AS count_pizzas,
+	RANK() OVER(ORDER BY COUNT(pizza_id) DESC) AS rnk
+	FROM customer_orders_temp
+	WHERE order_id IN 
+		(SELECT order_id
+		FROM runner_orders_temp
+		WHERE cancellation = '')
+	GROUP BY order_id
+	ORDER BY order_id) AS x
+WHERE rnk = 1
+```
 
 **Explanation:**
+- Create a subquery for those `order_id` which were completed. Meaning that the row `cancellation = ''`.
+- This subquery will be part of another subequery named `x`.
+- Using the first subquery, we will use it in a **WHERE** clause to filter those `order_id` that are part of completed orders.
+- Also, use the **COUNT** function to get the total of `pizza_id` for each `order_id`.
+- Next, use the **RANK()** window function. **ORDER BY** the `COUNT(pizza_id)` in a descending order, since we are interested in the highest number.
+- Finally, in the main query, which will use the subquery `x`, we will select the `order_id` and `count_pizzas` that has a `rnk = 1`.
+
 **Results and Analysis:**
+|order_id|count_pizzas|
+|---|---|
+|4|3|
+
+- Order_id 4 has the highest number of pizzas delivered.
 
 **7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?**
+```sql
+SELECT customer_id,
+SUM(CASE 
+	WHEN exclusions = '' AND extras = '' THEN 1
+	ELSE 0
+	END) AS no_changes,
+SUM(CASE
+	WHEN exclusions != '' OR extras != '' THEN 1
+	ELSE 0
+	END) AS at_least_1_change
+FROM customer_orders_temp
+WHERE order_id IN 
+		(SELECT order_id
+		FROM runner_orders_temp
+		WHERE cancellation = '')
+GROUP BY customer_id
+ORDER BY customer_id
+```
 
 **Explanation:**
+- Create a subquery for those `order_id` which were completed. Meaning that the row `cancellation = ''`.
+- Using the first subquery, we will use it in a **WHERE** clause to filter those `order_id` that are part of completed orders.
+- Use a **CASE** statement for when `exclusions` and `extras` are empty and another **CASE** statement for the opposite situation.
+- Use a **GROUP BY** clause to filter by `customer_id`.
+  
 **Results and Analysis:**
+|customer_id|no_changes|at_least_1_change|
+|---|---|---|
+|101|2|0|
+|102|3|0|
+|103|0|3|
+|104|1|2|
+|105|0|1|
+
+- Customer 101 has been delivered 2 pizzas with no changes.
+- Customer 102 has been delivered 3 pizzas with no changes.
+- Customer 103 has been delivered 3 pizzas with at least 1 change.
+- Customer 104 has been delivered 1 pizza with no changes and 2 pizzas with at least 1 change.
+- Customer 105 has been delivered 1 pizza with at least 1 change.
 
 **8. How many pizzas were delivered that had both exclusions and extras?**
 
