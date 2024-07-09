@@ -110,22 +110,66 @@ ALTER COLUMN duration TYPE INT USING duration::INTEGER;
 
 **1. How many pizzas were ordered?**
 
+```sql
+SELECT COUNT(pizza_id) AS pizza_count
+FROM customer_orders_temp;
+```
+
 **Explanation:**
+- Use the **COUNT** aggregate function to get the total number of `pizza_id` ordered.
+  
 **Results and Analysis:**
+|pizza_count|
+|---|
+|14|
+
+- There is a total of 14 pizzas ordered.
+  
 
 **2. How many unique customer orders were made?**
+```sql
+SELECT COUNT(DISTINCT order_id) AS unique_order 
+FROM customer_orders_temp;
+```
 
 **Explanation:**
+- Use the **COUNT** aggregate function to get the total number of **DISTINCT** `order_id` ordered.
+
 **Results and Analysis:**
+|unique_order|
+|---|
+|10|
+
+- There is a total of 10 unique `order_id`.
 
 **3. How many successful orders were delivered by each runner?**
 
+```sql
+SELECT runner_id, COUNT(order_id) AS count_orders
+FROM runner_orders_temp
+WHERE cancellation = ''
+GROUP BY runner_id;
+```
+
 **Explanation:**
+- Use the **COUNT** aggregate function to get the total number of `order_id` per group of `runner_id`.
+- Filter the resulting table using the **WHERE** clause by only those rows with a `cancellation = ''`. If the `cancellation` row has any value, it means that the order was cancelled.
+
 **Results and Analysis:**
+|runner_id|count_orders|
+|---|---|
+|1|4|
+|2|3|
+|3|1|
+
+- Runner 1 has a total of 4 sucessful orders delivered.
+- Runner 2 has a total of 3 sucessful orders delivered.
+- Runner 3 has a total of 1 sucessful orders delivered.
 
 **4. How many of each type of pizza was delivered?**
 
 **Explanation:**
+
 **Results and Analysis:**
 
 **5. How many Vegetarian and Meatlovers were ordered by each customer?**
