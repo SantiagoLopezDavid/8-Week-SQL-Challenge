@@ -168,9 +168,31 @@ GROUP BY runner_id;
 
 **4. How many of each type of pizza was delivered?**
 
+```sql
+SELECT ct.pizza_id, pizza_name, COUNT(*) AS pizza_id_count
+FROM runner_orders_temp rt
+JOIN customer_orders_temp ct ON ct.order_id = rt.order_id
+JOIN pizza_names pn ON pn.pizza_id = ct.pizza_id
+WHERE cancellation = ''
+GROUP BY ct.pizza_id, pizza_name;
+```
+
 **Explanation:**
 
+- Use the **COUNT** aggregate function to get the total number of rows per group of `pizza_id` and `pizza_name`.
+- **JOIN** the tables `runner_orders_temp` , `customer_orders_temp` and `pizza_names` in order to get the right columns.
+- Filter the resulting table using the **WHERE** clause by only those rows with a `cancellation = ''.
+- Use the **GROUP BY** clause with `pizza_id` and `pizza_name`.
+
 **Results and Analysis:**
+
+|pizza_id|pizza_name|pizza_id_count|
+|---|---|---|
+|1|Meatlovers|9|
+|2|Vegetarian|3|
+
+- Meatlovers pizza with an id of 1 has a tota of 9 orders delivered.
+- Vegetarian pizza with an id of 2 has a tota of 3 orders delivered.
 
 **5. How many Vegetarian and Meatlovers were ordered by each customer?**
 
