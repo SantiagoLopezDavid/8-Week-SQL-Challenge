@@ -303,9 +303,34 @@ ORDER BY customer_id
 - Customer 105 has been delivered 1 pizza with at least 1 change.
 
 **8. How many pizzas were delivered that had both exclusions and extras?**
+```sql
+WITH cte AS (
+	SELECT order_id,
+	SUM(CASE
+		WHEN exclusions != '' and extras != '' THEN 1
+		ELSE 0
+		END) AS exclusions_and_extras
+	FROM customer_orders_temp
+	WHERE order_id IN 
+			(SELECT order_id
+			FROM runner_orders_temp
+			WHERE cancellation = '')
+	GROUP BY order_id)
+SELECT DISTINCT order_id FROM cte
+WHERE exclusions_and_extras >= 1
+```
 
 **Explanation:**
+- Inside a **CTE** create a subquery for those `order_id` which were completed. Meaning that the row `cancellation = ''`.
+- Using the first subquery, we will use it in a **WHERE** clause to filter those `order_id` that are part of completed orders.
+- Use a **CASE** statement for when `exclusions` and `extras` are not empty or equal to ''.
+- From the **CTE** filter the table with those **DISTINCT** `order_id` that `exclusions_and_extras >= 1`. We have to use **DISTINCT** as a single order could have multiple pizzas. 
+
 **Results and Analysis:**
+|order_id|
+|10|
+
+- Only order_id 10 has a pizza that has both exclusions and extras.
 
 **9. What was the total volume of pizzas ordered for each hour of the day?**
 
