@@ -333,14 +333,59 @@ WHERE exclusions_and_extras >= 1
 - Only order_id 10 has a pizza that has both exclusions and extras.
 
 **9. What was the total volume of pizzas ordered for each hour of the day?**
+```sql
+SELECT
+EXTRACT(hour FROM order_time) AS hour_order,
+COUNT(pizza_id) AS count_pizza
+FROM customer_orders_temp
+GROUP BY hour_order
+ORDER BY hour_order
+```
 
 **Explanation:**
+- Use the **EXTRACT** function to extract the 'hour' field form `order_date`.
+- Use the **COUNT** function to get the total of `pizza_id` for each `hour_order`.
+- Finally **GROUP BY** the `hour_order`.
+
 **Results and Analysis:**
+|hour_order|count_pizza|
+|---|---|
+|11|1|
+|13|3|
+|18|3|
+|19|1|
+|21|3|
+|23|3|
+
+- The hours with the highest number of pizzas ordered are 13(1pm), 18(6:00 pm), 21(9:00 pm) and 23(11:00 pm) all with 3 pizzas in total.
+- The hours with the lowest volume of pizzas ordered are 11:00 am and 19(7:00 pm), each with only 1 order.
 
 **10. What was the volume of orders for each day of the week?**
+```sql
+SELECT
+TO_CHAR(order_time, 'Day') AS day_of_week,
+COUNT(order_id) AS count_order
+FROM customer_orders_temp
+GROUP BY day_of_week
+ORDER BY count_order DESC;
+```
 
 **Explanation:**
+- Use the **TO CHAR** function to format the day of the week from `order_date` as a textual representation.
+- Use the **COUNT** function to get the total of `order_id` for each `day_of_week`.
+- Finally **GROUP BY** the `day_of_week` and **ORDER BY** `count_order` in a descending order to know which days of the week have the highest volume of orders.
+
 **Results and Analysis:**
+|day_of_week|count_order|
+|---|---|
+|Saturday|5|
+|Wednesday|5|
+|Thursday|3|
+|Friday|1|
+
+- The days of the week with the highest volume of orders is Wednesday and Saturday with a count of 5 orders each.
+- Thursday has a total of 3 orders.
+- Friday is the day of the week with the lowest order count, only 1.
 
 ---
 ### Runner and Customer Experience
