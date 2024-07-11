@@ -391,22 +391,93 @@ ORDER BY count_order DESC;
 ### Runner and Customer Experience
 
 **1. How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)**
+```sql
+SELECT
+TO_CHAR(registration_date, 'MON') AS month,
+TO_CHAR(registration_date, 'W') AS month_week,
+COUNT(*) AS count_runners
+FROM runners
+GROUP BY month, month_week
+ORDER BY month, month_week;
+```
 
 **Explanation:**
+- Using the **TO_CHAR** function, change the formatting of `registration_date` to get both the `month` and the `month_week`. Using the format 'W' the first week starts on the first day of the month.
+- **COUNT** the number of runner per group of `month` and `month_week`.
 
 **Results and Analysis:**
+|month|month_week|count_runners|
+|---|---|---|
+|JAN|1|2|
+|JAN|2|1|
+|JAN|3|1|
+
+- The only month in the data base for the moment is January.
+- The first week of the month 2 runners signed up.
+- The second and third of the month, only 1 runner signed up.
 
 **2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?**
 
+```sql
+SELECT rt.runner_id,
+to_char(AVG(rt.pickup_time - ct.order_time), 'MI:SS') AS avg_time
+FROM runner_orders_temp AS rt
+JOIN customer_orders_temp AS ct ON ct.order_id = rt.order_id
+GROUP BY rt.runner_id
+ORDER BY avg_time;
+```
 **Explanation:**
 
+- Calculate the average time of the substract between the `rt.pickup_time`and `ct.order_time`.
+- Using the **TO_CHAR** function, change the formatting of `avg_time` to get a precision of two seconds.
+- Use the **JOIN** clause to get both timestamps needed for this question.
+  
 **Results and Analysis:**
+|runner_id|avg_time|
+|---|---|
+|3|10:28|
+|1|15:40|
+|2|23:43|
+
+- The runner 3 is the fastest out of all runners with an average time of 10 minutes and 28 seconds.
+- The runner 1 has an average time of 15 minutes and 40 seconds.
+- The runner 2 is the slowest out of all runners with an average time of 23 minutes and 43 seconds.
 
 **3. Is there any relationship between the number of pizzas and how long the order takes to prepare?**
+```sql
+WITH cte AS 
+	(SELECT rt.order_id, COUNT(ct.pizza_id) AS pizza_count,
+	rt.pickup_time - ct.order_time AS diff_time
+	FROM runner_orders_temp AS rt
+	JOIN customer_orders_temp AS ct ON ct.order_id = rt.order_id
+	GROUP BY rt.order_id, diff_time
+	HAVING rt.pickup_time - ct.order_time is not null
+	ORDER BY pizza_count)
+SELECT pizza_count, to_char(AVG(diff_time),'MI:SS') AS avg_prep_time
+FROM cte
+GROUP BY pizza_count;
+```
 
 **Explanation:**
+- Create a `cte` and calculate the `diff_time` between the `rt.pickup_time` and `ct.order_time`.
+- **COUNT** the number of pizzas ordered in each `rt.order_id`
+- This `diff_time` is going to be consistent in each `order_id` since no matter the number of pizzas ordered, they are all going to be picked up at the same time.
+- Use the **GROUP BY** clause with `rt.order_id` and `diff_time`.
+- Using this `cte` calculate the **AVG** time per group of `pizza_count`.
+- Using the **TO_CHAR** function, change the formatting of `avg_prep_time` to get a precision of two seconds.
 
 **Results and Analysis:**
+|avg_prep_time|avg_prep_time|
+|---|---|
+|1|12:21|
+|2|18:22|
+|3|29:17|
+
+- In average, preparing 1 pizza takes aroung 12 minutes and 21 seconds.
+- Preparing 2 pizzas takes around 18 minutes and 22 seconds. This means 9 minutes and 11 seconds per pizza.
+- Preparing 3 pizzas takes around 29 minutes and 17 seconds. Meaning 9 minutes and 45 seconds per pizza.
+
+- Finally, there is a relationship between the number of pizzas and the time to prepare them. It takes aroung 9 to 10 minutes extra for each pizza added to the order. We could say that making 4 pizzas would take ~40 minutes to prepare.
 
 **4. What was the average distance travelled for each customer?**
 
@@ -440,5 +511,7 @@ ORDER BY count_order DESC;
 
 ---
 ### Bonus DML Challenges (DML = Data Manipulation Language)
+
+**If Danny wants to expand his range of pizzas - how would this impact the existing data design? Write an `INSERT` statement to demonstrate what would happen if a new `Supreme` pizza with all the toppings was added to the Pizza Runner menu?**
 
 ---
