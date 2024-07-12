@@ -243,7 +243,7 @@ FROM
 		WHERE cancellation = '')
 	GROUP BY order_id
 	ORDER BY order_id) AS x
-WHERE rnk = 1
+WHERE rnk = 1;
 ```
 
 **Explanation:**
@@ -278,7 +278,7 @@ WHERE order_id IN
 		FROM runner_orders_temp
 		WHERE cancellation = '')
 GROUP BY customer_id
-ORDER BY customer_id
+ORDER BY customer_id;
 ```
 
 **Explanation:**
@@ -317,7 +317,7 @@ WITH cte AS (
 			WHERE cancellation = '')
 	GROUP BY order_id)
 SELECT DISTINCT order_id FROM cte
-WHERE exclusions_and_extras >= 1
+WHERE exclusions_and_extras >= 1;
 ```
 
 **Explanation:**
@@ -339,7 +339,7 @@ EXTRACT(hour FROM order_time) AS hour_order,
 COUNT(pizza_id) AS count_pizza
 FROM customer_orders_temp
 GROUP BY hour_order
-ORDER BY hour_order
+ORDER BY hour_order;
 ```
 
 **Explanation:**
@@ -480,24 +480,120 @@ GROUP BY pizza_count;
 - Finally, there is a relationship between the number of pizzas and the time to prepare them. It takes aroung 9 to 10 minutes extra for each pizza added to the order. We could say that making 4 pizzas would take ~40 minutes to prepare.
 
 **4. What was the average distance travelled for each customer?**
+```sql
+SELECT customer_id, round(AVG(distance)::numeric,2) AS avg_distance
+FROM runner_orders_temp AS rt
+LEFT JOIN customer_orders_temp AS ct ON ct.order_id = rt.order_id
+GROUP BY customer_id
+HAVING AVG(distance) IS NOT NULL
+ORDER BY customer_id;
+```
 
 **Explanation:**
 
+- Using the aggregate function **AVG** calculate the average of the distance for each group of `customer_id`. **ROUND** the result to 2 decimals.
+- **JOIN** the tables `runner_orders_temp` and `customer_orders_temp`.
+- Filter the resulting table to get only those results of `AVG(distance)` that are not **NULL**.
+
 **Results and Analysis:**
+
+|customer_id|avg_distance|
+|---|---|
+|101|20.00|
+|102|16.73|
+|103|23.40|
+|104|10.00|
+|105|25.00|
+
+- The furthest that runners have to travel is in average 25km to get to customer 105.
+- The customer closest for runners is 104, with an average distance of 10km.
 
 **5. What was the difference between the longest and shortest delivery times for all orders?**
 
+```sql
+SELECT MAX(duration) AS longest_delivery, 
+MIN(duration) AS shortest_delivery ,
+MAX(duration) - MIN(duration) AS diff_duration
+FROM runner_orders_temp
+WHERE duration IS NOT NULL;
+```
+
 **Explanation:**
 
+- Use the **MAX** and **MIN** functions to get the longest and shortest delivery duration times.
+- Calculate the difference between the `longest_delivery` and `shortest_delivery`.
+- Filter the `duration` to those values that are not **NULL**.
+
 **Results and Analysis:**
+|longest_delivery|shortest_delivery|diff_duration|
+|---|---|---|
+|40|10|30|
+
+- The longest delivery made took 40 minutes.
+- The shortest delivery made took 10 minutes.
+- The difference between the longest and shortest delivery is 30 minutes.
 
 **6. What was the average speed for each runner for each delivery and do you notice any trend for these values?**
 
+- **Speed for each runner for each delivery**
+```sql
+SELECT runner_id, distance, duration,
+ROUND(((distance/duration)*60)::numeric,2) AS speed_km_hr
+FROM runner_orders_temp 
+WHERE distance IS NOT NULL
+ORDER BY runner_id, distance;
+```
+
+- **Average speed for each runner**
+```sql
+SELECT runner_id, ROUND(AVG(speed_km_hr),2) AS avg_speed 
+FROM
+	(SELECT runner_id, distance, duration,
+	ROUND(((distance/duration)*60)::numeric,2) AS speed_km_hr
+	FROM runner_orders_temp 
+	WHERE distance IS NOT NULL
+	ORDER BY runner_id, distance) AS x
+GROUP BY runner_id;
+```
 **Explanation:**
+
+- Calculate the speed(km/hr) for each delivery of the runners.
+- **ROUND** the results to only 2 decimals for easier analysis.
+- **ORDER BY** the `runner_id` and the `distance`.
+- To calculate the `avg_speed` per `runner_id`. Use the past code as a subquery and use the **AVG** aggregate function on `speed_km_hr`.
+- **GROUP BY** `runner_id`.
 
 **Results and Analysis:**
 
+- **Speed for each runner for each delivery**
+
+|runner_id|distance|duration|speed_km_hr|
+|---|---|---|---|
+|1|10|10|60.00|
+|1|13.4|20|40.20|
+|1|20|32|37.50|
+|1|20|27|44.44|
+|2|23.4|15|93.60|
+|2|23.4|40|35.10|
+|2|25|25|60.00|
+|3|10|15|40.00|
+
+- **Average speed for each runner**
+
+|runner_id|avg_speed|
+|---|---|
+|1|45.54|
+|2|62.90|
+|3|40.00|
+
+- Runner 2 is the fastest of the runners. But this does not mean runner 2 is the most efficient, he/she might be speeding in some of his deliveries. This needs to be address before an accident happens.
+- Runner 2 has the highest and slowest speed for deliveries. Both made in the same delivery distance. Consistency is important for a delivery service and runner 2 needs improvement. 
+- Runner 3 is the slowest of all runners, but this conclusion is based only on one delivery. We might have to wait to see how he/she performs in the future.
+- Runner 1 is consistent in his delivery speed, being 75% of the time between 37 and 44 km per hour.
+
 **7. What is the successful delivery percentage for each runner?**
+
+
 
 **Explanation:**
 
