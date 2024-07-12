@@ -593,12 +593,35 @@ GROUP BY runner_id;
 
 **7. What is the successful delivery percentage for each runner?**
 
-
+```sql
+WITH cte AS 
+	(SELECT runner_id,
+	SUM(CASE WHEN cancellation = '' THEN 1 ELSE 0 END ) AS successful_deliveries,
+	COUNT(order_id) AS total_orders
+	FROM runner_orders_temp
+	GROUP BY runner_id
+	ORDER BY runner_id)
+SELECT runner_id,
+ROUND((successful_deliveries::numeric/total_orders::numeric),2)*100 AS success_percentage
+FROM cte;
+```
 
 **Explanation:**
+- Create a **CTE** in which use the aggregate function **SUM** to add 1 each time a runner successfully deliverd an order. This means that the `cancellation` column is ''.
+- **COUNT** the total number of `order_id` for each `runner_id`.
+- **GROUP BY** the `runner_id`
+- Use the **CTE** to calculate the `success_percentage`. **CAST** both `successful_deliveries` and `total_orders` to **NUMERIC** type in order to perform the division.
 
 **Results and Analysis:**
+|runner_id|sucess_percentage|
+|---|---|
+|1|100.00|
+|2|75.00|
+|3|50.00|
 
+- Runner 1 has a 100% sucessful delivery percentage.
+- Runner 2 has a 75% sucessful delivery percentage.
+- Runner 3 has a 50% sucessful delivery percentage.
 ---
 ### Ingredient Optimisation
 
