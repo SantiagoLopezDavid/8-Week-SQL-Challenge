@@ -625,6 +625,124 @@ FROM cte;
 ---
 ### Ingredient Optimisation
 
+**1. What are the standard ingredients for each pizza?**
+
+```sql
+WITH cte AS 
+	(SELECT
+	pizza_id,
+	REGEXP_SPLIT_TO_TABLE(toppings, '[,\s]+')::INTEGER AS topping_id
+	FROM pizza_recipes),
+	cte2 AS 
+	(SELECT cte.pizza_id, pn.pizza_name, cte.topping_id, topping_name
+	 FROM cte
+	 JOIN pizza_toppings pt ON cte.topping_id = pt.topping_id
+	 JOIN pizza_names pn ON pn.pizza_id = cte.pizza_id)
+SELECT cte2.pizza_id, cte2.pizza_name,
+STRING_AGG(cte2.topping_name,', ') AS toppings
+FROM cte2
+GROUP BY cte2.pizza_id, cte2.pizza_name
+ORDER BY cte2.pizza_id;
+```
+**Explanation:**
+- Create 2 **CTE's**.
+- In the first **CTE** split the list of toppings from `pizza_recipes` into a table using **REGEXP_SPLIT_TO_TABLE**.
+- In the second **CTE** **JOIN** the tables `pizza_toppings` and `pizza_names` with the `cte`. This to get the `pizza_name` and `topping_name`.
+- Finally, use the function **STRING_AGG** to concatenate all the `topping_name` for each `pizza_name`.
+
+**Results and Analysis:**
+
+|pizza_id|pizza_name|toppings|
+|---|---|---|
+|1|Meatlovers|Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami|
+|2|Vegetarian|Cheese, Mushrooms, Onions, Peppers, Tomatoes, Tomato Sauce|
+
+**2. What was the most commonly added extra?**
+
+```sql
+WITH cte AS 
+	(SELECT
+	order_id,
+	REGEXP_SPLIT_TO_TABLE(extras, '[,\s]+')::INTEGER AS extras_id
+	FROM customer_orders_temp
+	WHERE extras <> '')
+SELECT topping_name,
+COUNT(extras_id) AS topping_count
+FROM cte
+JOIN pizza_toppings pt ON pt.topping_id = cte.extras_id
+GROUP BY topping_name
+ORDER BY topping_count DESC;
+```
+**Explanation:**
+- Create a **CTE** and split the `extras` column into a table of individual extras added.
+- Using the **CTE**, **COUNT** the `extras_id` for each `topping_name`.
+- **ORDER BY** the `topping_count` in descending order.
+
+**Results and Analysis:**
+
+|topping_name|topping_count|
+|---|---|
+|Bacon|4|
+|Chicken|1|
+|Cheese|1|
+
+- Bacon is the most commonly added extra with 4 requests.
+
+**3. What was the most common exclusion?**
+
+```sql
+WITH cte AS 
+	(SELECT
+	order_id,
+	REGEXP_SPLIT_TO_TABLE(exclusions, '[,\s]+')::INTEGER AS exclusions_id
+	FROM customer_orders_temp
+	WHERE exclusions <> '')
+SELECT topping_name,
+COUNT(exclusions_id) AS topping_count
+FROM cte
+JOIN pizza_toppings pt ON pt.topping_id = cte.exclusions_id
+GROUP BY topping_name
+ORDER BY topping_count DESC;
+```
+**Explanation:**
+- Use the same code for the last question but use the `exclusions` column instead.
+
+**Results and Analysis:**
+|topping_name|topping_count|
+|---|---|
+|Cheese|4|
+|Mushrooms|1|
+|BBQ Sauce|1|
+
+**4. Generate an order item for each record in the customers_orders table in the format of one of the following:**
+- Meat Lovers
+- Meat Lovers - Exclude Beef
+- Meat Lovers - Extra Bacon
+- Meat Lovers - Exclude Cheese, Bacon - Extra Mushroom, Peppers
+
+```sql
+```
+**Explanation:**
+**Results and Analysis:**
+
+
+**5. Generate an alphabetically ordered comma separated ingredient list for each pizza order from the customer_orders table and add a 2x in front of any relevant ingredients**
+
+- For example: "Meat Lovers: 2xBacon, Beef, ... , Salami"
+
+```sql
+```
+**Explanation:**
+**Results and Analysis:**
+
+
+**6. What is the total quantity of each ingredient used in all delivered pizzas sorted by most frequent first?**
+
+```sql
+```
+**Explanation:**
+**Results and Analysis:**
+
 ---
 ### Pricing and Ratings
 
