@@ -4,8 +4,8 @@
 
 ## Table of contents
 1. Problem Statement.
-2. Entity Relationship Diagram.
-3. Questions and Solutions.
+3. Entity Relationship Diagram.
+4. Questions and Solutions.
 
 All the information regarding the case study has been sourced from [here](https://8weeksqlchallenge.com/case-study-1/)
 
