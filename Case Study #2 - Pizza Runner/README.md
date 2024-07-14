@@ -798,24 +798,24 @@ WITH cte_extras AS (
 		END ) AS extra_charge
 	FROM
 		(SELECT order_id,pizza_id,
-			CASE WHEN extras_id='' THEN 0 ELSE extras_id::integer END AS extras_id
-			FROM
-				(SELECT
-				order_id, pizza_id,
-				REGEXP_SPLIT_TO_TABLE(extras, '[,\s]+') AS extras_id
-				FROM customer_orders_temp) AS sub_x
+		CASE WHEN extras_id='' THEN 0 ELSE extras_id::integer END AS extras_id
+		FROM
+			(SELECT
+			order_id, pizza_id,
+			REGEXP_SPLIT_TO_TABLE(extras, '[,\s]+') AS extras_id
+			FROM customer_orders_temp) AS sub_x
 		WHERE order_id IN 
-		 (SELECT order_id FROM runner_orders_temp WHERE cancellation = '')) AS sub_y
+			(SELECT order_id FROM runner_orders_temp WHERE cancellation = '')) AS sub_y
 	LEFT JOIN pizza_toppings pt ON pt.topping_id = sub_y.extras_id
 	LEFT JOIN pizza_names pn on pn.pizza_id = sub_y.pizza_id
 	GROUP BY pizza_name
 ),
 cte_pizzas as (
 	SELECT pizza_name,
-		CASE
-			WHEN pizza_name = 'Meatlovers' THEN COUNT(sub_x.pizza_id)*12
-			WHEN pizza_name = 'Vegetarian' THEN COUNT(sub_x.pizza_id)*10
-			END AS total_money
+	CASE
+		WHEN pizza_name = 'Meatlovers' THEN COUNT(sub_x.pizza_id)*12
+		WHEN pizza_name = 'Vegetarian' THEN COUNT(sub_x.pizza_id)*10
+		END AS total_money
 	FROM 
 		(SELECT rt.order_id, ct.pizza_id, pizza_name
 		FROM runner_orders_temp rt
@@ -831,7 +831,6 @@ FROM cte_pizzas cp
 JOIN cte_extras ce ON ce.pizza_name = cp.pizza_name
 GROUP BY cp.pizza_name
 ```
-
 |pizza_name|total|
 |---|---|
 |Meatlovers|112|
