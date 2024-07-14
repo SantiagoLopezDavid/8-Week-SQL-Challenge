@@ -17,6 +17,8 @@ All the information regarding the case study has been sourced from [here](https:
   
 ## Problem Statement
 
+Pizza Runner, a local pizza delivery service, is facing challenges in optimizing its operations and enhancing customer satisfaction. The company aims to analyze its delivery data to gain insights into order patterns, delivery times, runner performance, and customer preferences. By leveraging `SQL` to explore and interpret the data, Pizza Runner seeks to identify opportunities for improving its delivery efficiency, understanding customer behavior, and enhancing overall service quality.
+
 
 ## Entity Relationship Diagram
 
