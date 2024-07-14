@@ -714,6 +714,8 @@ ORDER BY topping_count DESC;
 |Mushrooms|1|
 |BBQ Sauce|1|
 
+- The most common exclusion is Cheese with 4 requests.
+
 **4. Generate an order item for each record in the customers_orders table in the format of one of the following:**
 - Meat Lovers
 - Meat Lovers - Exclude Beef
@@ -745,6 +747,113 @@ ORDER BY topping_count DESC;
 
 ---
 ### Pricing and Ratings
+
+**1. If a Meat Lovers pizza costs $12 and Vegetarian costs $10 and there were no charges for changes - how much money has Pizza Runner made so far if there are no delivery fees?**
+
+```sql
+SELECT pizza_name,
+CASE
+	WHEN pizza_name = 'Meatlovers' THEN COUNT(sub_x.pizza_id)*12
+	WHEN pizza_name = 'Vegetarian' THEN COUNT(sub_x.pizza_id)*10
+	END AS total_money
+FROM 
+	(SELECT rt.order_id, ct.pizza_id, pizza_name
+	FROM runner_orders_temp rt
+	JOIN customer_orders_temp ct ON ct.order_id = rt.order_id
+	JOIN pizza_names pn ON pn.pizza_id = ct.pizza_id
+	WHERE cancellation = ''
+	ORDER BY rt.order_id) AS sub_x
+GROUP BY pizza_name;
+```
+**Explanation:**
+
+- We have to filter the `order_id` by only those that were not cancelled. This is done in `sub_x`.
+- **JOIN** the tables `customer_orders_temp`, `pizza_names` and `runner_orders_temp` in order to get the right data.
+- In the main query:
+  
+	- Use a **CASE** statement to multiply the **COUNT** of `pizza_id` for the corresponding price.
+	- Use the **GROUP BY** clause with the `pizza_name` column to filter the results per pizza type.
+
+**Results and Analysis:**
+
+|pizza_name|total_money|
+|---|---|
+|Meatlovers|108|
+|Vegetarian|30|
+
+- Meatlovers pizza has made Pizza Runner a total of $108.
+- Vegatarian pizza has made Pizza Runner a total of $30.
+- In total, Pizza Runner has made $138 so far from their pizzas.
+
+**2. What if there was an additional $1 charge for any pizza extras?**
+- Add cheese is $1 extra
+
+```sql
+WITH cte_extras AS (
+	SELECT pizza_name,
+	SUM(CASE 
+		WHEN topping_name ='Cheese' THEN 2
+		WHEN topping_name IS NULL THEN 0
+		ELSE 1
+		END ) AS extra_charge
+	FROM
+		(SELECT order_id,pizza_id,
+			CASE WHEN extras_id='' THEN 0 ELSE extras_id::integer END AS extras_id
+			FROM
+				(SELECT
+				order_id, pizza_id,
+				REGEXP_SPLIT_TO_TABLE(extras, '[,\s]+') AS extras_id
+				FROM customer_orders_temp) AS sub_x
+		WHERE order_id IN 
+		 (SELECT order_id FROM runner_orders_temp WHERE cancellation = '')) AS sub_y
+	LEFT JOIN pizza_toppings pt ON pt.topping_id = sub_y.extras_id
+	LEFT JOIN pizza_names pn on pn.pizza_id = sub_y.pizza_id
+	GROUP BY pizza_name
+),
+cte_pizzas as (
+	SELECT pizza_name,
+		CASE
+			WHEN pizza_name = 'Meatlovers' THEN COUNT(sub_x.pizza_id)*12
+			WHEN pizza_name = 'Vegetarian' THEN COUNT(sub_x.pizza_id)*10
+			END AS total_money
+	FROM 
+		(SELECT rt.order_id, ct.pizza_id, pizza_name
+		FROM runner_orders_temp rt
+		JOIN customer_orders_temp ct ON ct.order_id = rt.order_id
+		JOIN pizza_names pn ON pn.pizza_id = ct.pizza_id
+		WHERE cancellation = ''
+		ORDER BY rt.order_id) AS sub_x
+	GROUP BY pizza_name
+)
+SELECT cp.pizza_name,
+SUM(total_money + extra_charge)
+FROM cte_pizzas cp
+JOIN cte_extras ce ON ce.pizza_name = cp.pizza_name
+GROUP BY cp.pizza_name
+```
+
+|pizza_name|total|
+|---|---|
+|Meatlovers|112|
+|Vegetarian|31|
+
+- Adding the extra charges, Meatlovers pizza has made $112 and Vegetarian pizza has made $31.
+
+**3. The Pizza Runner team now wants to add an additional ratings system that allows customers to rate their runner, how would you design an additional table for this new dataset - generate a schema for this new table and insert your own data for ratings for each successful customer order between 1 to 5.**
+
+**4. Using your newly generated table - can you join all of the information together to form a table which has the following information for successful deliveries?**
+- customer_id
+- order_id
+- runner_id
+- rating
+- order_time
+- pickup_time
+- Time between order and pickup
+- Delivery duration
+- Average speed
+-Total number of pizzas
+
+**5. If a Meat Lovers pizza was $12 and Vegetarian $10 fixed prices with no cost for extras and each runner is paid $0.30 per kilometre traveled - how much money does Pizza Runner have left over after these deliveries?**
 
 ---
 ### Bonus DML Challenges (DML = Data Manipulation Language)
