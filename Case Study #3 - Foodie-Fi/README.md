@@ -184,12 +184,54 @@ GROUP BY customer_count;
 **6. What is the number and percentage of customer plans after their initial free trial?**
 
 ```sql
+WITH cte AS
+	(SELECT 
+	COUNT(*) AS total_customer_count,
+	SUM(CASE
+		WHEN final_plan=1 
+		THEN 1 END) AS basic_monthly,
+	SUM(CASE
+		WHEN final_plan=2 
+		THEN 1 END) AS pro_monthly,
+	SUM(CASE
+		WHEN final_plan=3 
+		THEN 1 END) AS pro_annual,
+	SUM(CASE
+		WHEN final_plan=4 
+		THEN 1 END) AS churn
+	FROM
+		(SELECT customer_id,
+		MIN(plan_id) AS trail_plan,
+		MAX(plan_id) AS final_plan
+		FROM subscriptions
+		GROUP BY customer_id
+		ORDER BY customer_id) AS x)
+SELECT total_customer_count,
+basic_monthly,
+ROUNG(basic_monthly::numeric/total_customer_count::numeric * 100,2) AS basic_monthly_percentage,
+pro_monthly,
+ROUND(pro_monthly::numeric/total_customer_count::numeric * 100,2) AS pro_monthly_percentage,
+pro_annual,
+ROUND(pro_annual::numeric/total_customer_count::numeric * 100,2) AS pro_annual_percentage,
+churn,
+ROUND(churn::numeric/total_customer_count::numeric *100,2) AS churn_percentage
+FROM cte;
 ```
 **Explanation:**
 
-**Results and Analysis:**
 
----
+
+**Results and Analysis:**
+<img width="1174" alt="image" src="https://github.com/user-attachments/assets/88b0c85d-430a-4d87-bd0e-73a60950f766">
+
+- There is a total of 1000 unique customers.
+- After the initial free trial:
+  - 125 customers stay in the basic monthly plan, which represents 12.5% of the total.
+  - 316 customers stay in the pro monthly plan, which represents 31.6% of the total.
+  - 252 customers stay in the pro annual plan, which represents 25.2% of the total.
+  - 307 customers decided to cancelled their plan after the free trail, which represents 30.7% of the total.
+- Most of the customer stay in the pro monthly plan, which could mean that they enjoy the service and did not bother to change the plan after the free trail.
+- The next big group is customer who decided to cancelled their plan as soon as the free trail plan was over. 
 
 **7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?**
 
