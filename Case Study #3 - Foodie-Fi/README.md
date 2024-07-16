@@ -109,30 +109,75 @@ ORDER BY s.plan_id;
 ```
 **Explanation:**
 
+- **JOIN** the tables `subscriptions` and `plans` to get the `plan_name` for each `plan_id`.
+- Use the **WHERE** clause to filter the resulting table to those `start_date` that have a year greater than 2020.
+- **COUNT** each of the results for each `plan_id` and `plan_name`.
+
 **Results and Analysis:**
 
 <img width="285" alt="image" src="https://github.com/user-attachments/assets/cbbf34e0-bfed-4897-904d-4daa62d3e6d6">
 
-
+- Plan 1 or Basic Monthly has 8 subscriptions after the year 2020. The lowest of the year 2021.
+- Plan 2 or Pro Monthly has 60 subscriptions after the year 2020.
+- Plan 3 or Pro Annual has 63 subscriptions after the year 2020.
+- Plan 4 of churn has a count of 71 customers. Churn is the highest count for the year 2021.
 ---
 
 **4. What is the customer count and percentage of customers who have churned rounded to 1 decimal place?**
 
 ```sql
+SELECT ROUND((count_churn::numeric/customer_count::numeric)*100,1) AS churn_percentage,
+count_churn
+FROM
+	(SELECT 
+	SUM(CASE WHEN plan_id = 4 THEN 1 END) AS count_churn,
+	COUNT(DISTINCT customer_id) AS customer_count
+	FROM subscriptions) AS x
 ```
 **Explanation:**
 
-**Results and Analysis:**
+- Use a subquery to **COUNT** the total of unique `customer_id` and **SUMM** the total of `plan_id = 4` from the database.
+- In the main query, use the two variables from the subquery to calculate the `churn_percentage`.
 
+**Results and Analysis:**
+<img width="233" alt="image" src="https://github.com/user-attachments/assets/b47b7528-4108-457f-a0f6-85318091ed67">
+
+- The customer churn count is 307 in total. Representing a 30.7% of the total count of unique customers.
 ---
 
 **5. How many customers have churned straight after their initial free trial - what percentage is this rounded to the nearest whole number?**
 
 ```sql
+WITH cte_churn AS
+	(SELECT *
+	FROM subscriptions
+	WHERE plan_id = 4),
+cte_trial AS
+	(SELECT *
+	 FROM subscriptions
+	 WHERE plan_id=0),
+cte_churn_after_trial AS 
+	(SELECT 
+	COUNT(cc.customer_id) AS customer_count
+	FROM cte_churn cc
+	JOIN cte_trial ct ON ct.customer_id = cc.customer_id
+	WHERE cc.start_date - ct.start_date = 7)
+SELECT customer_count,
+ROUND(customer_count::numeric/COUNT(DISTINCT customer_id::numeric)*100,2) AS percentage_churn
+FROM subscriptions, cte_churn_after_trial
+GROUP BY customer_count;
 ```
 **Explanation:**
+- Create a **CTE** to get the `customer_id` where the `plan-id = 4`. Meaning they cancelled the subscription.
+- Create a **CTE** to get the `customer_id` where the `plan-id = 0`. Meaning they started the free trail.
+- Both these **CTEs** will have the `start_date` for the plans. We can use another **CTE** to calculate the difference between these dates and using the **WHERE** clause, filter the `customer_id` which difference between the `start_date` from their free trail and the date they decided to cancelled.
+- Finally, use this `customer_count` to calculate the `percentage_churn` with all the unique `customer_id` from the table `subscriptions`.
 
 **Results and Analysis:**
+
+<img width="256" alt="image" src="https://github.com/user-attachments/assets/64290e0f-5c9a-4d03-a8e1-b17092f8b6af">
+
+- There are 92 customers who cancelled their subscriptions right after their free trail period ended. This number is only 9.2% from the total count of customers.
 
 ---
 
