@@ -184,63 +184,73 @@ GROUP BY customer_count;
 **6. What is the number and percentage of customer plans after their initial free trial?**
 
 ```sql
-WITH cte AS
-	(SELECT 
-	COUNT(*) AS total_customer_count,
-	SUM(CASE
-		WHEN final_plan=1 
-		THEN 1 END) AS basic_monthly,
-	SUM(CASE
-		WHEN final_plan=2 
-		THEN 1 END) AS pro_monthly,
-	SUM(CASE
-		WHEN final_plan=3 
-		THEN 1 END) AS pro_annual,
-	SUM(CASE
-		WHEN final_plan=4 
-		THEN 1 END) AS churn
-	FROM
-		(SELECT customer_id,
-		MIN(plan_id) AS trail_plan,
-		MAX(plan_id) AS final_plan
-		FROM subscriptions
-		GROUP BY customer_id
-		ORDER BY customer_id) AS x)
-SELECT total_customer_count,
-basic_monthly,
-ROUNG(basic_monthly::numeric/total_customer_count::numeric * 100,2) AS basic_monthly_percentage,
-pro_monthly,
-ROUND(pro_monthly::numeric/total_customer_count::numeric * 100,2) AS pro_monthly_percentage,
-pro_annual,
-ROUND(pro_annual::numeric/total_customer_count::numeric * 100,2) AS pro_annual_percentage,
-churn,
-ROUND(churn::numeric/total_customer_count::numeric *100,2) AS churn_percentage
-FROM cte;
+WITH cte AS 
+	(SELECT customer_id, plan_id, start_date,
+	LEAD(plan_id) OVER(PARTITION BY customer_id ORDER BY plan_id) AS next_plan_id
+	FROM subscriptions)
+SELECT 
+next_plan_id,
+COUNT(customer_id) AS customer_count,
+ROUND(COUNT(customer_id)::numeric/
+	  (SELECT COUNT(DISTINCT customer_id) FROM subscriptions)*100,2) AS percentage
+FROM cte
+WHERE plan_id = 0
+GROUP BY next_plan_id
+ORDER BY next_plan_id;
 ```
 **Explanation:**
 
-
+- With a **CTE**, get every `next_plan_id` form every row.
+- Using that `CTE` count the number of `customer_id` per group of `next_plan_id`. This would calculate the amount of customers converted after their free trail period.
+- Calculate the `percentage` of each grup.
+- Using the **WHERE** clause, filter the resulting table only by those rows that had the `next_plan_id` right after the `plan_id = 0`.
 
 **Results and Analysis:**
-<img width="1174" alt="image" src="https://github.com/user-attachments/assets/88b0c85d-430a-4d87-bd0e-73a60950f766">
+<img width="320" alt="image" src="https://github.com/user-attachments/assets/3d54482f-903c-489d-9228-092e7766474a">
 
 - There is a total of 1000 unique customers.
 - After the initial free trial:
-  - 125 customers stay in the basic monthly plan, which represents 12.5% of the total.
-  - 316 customers stay in the pro monthly plan, which represents 31.6% of the total.
-  - 252 customers stay in the pro annual plan, which represents 25.2% of the total.
-  - 307 customers decided to cancelled their plan after the free trail, which represents 30.7% of the total.
-- Most of the customer stay in the pro monthly plan, which could mean that they enjoy the service and did not bother to change the plan after the free trail.
-- The next big group is customer who decided to cancelled their plan as soon as the free trail plan was over. 
-
+  - 546 customers stay in the basic monthly plan, which represents 54.6% of the total.
+  - 325 customers stay in the pro monthly plan, which represents 32.5% of the total.
+  - 37 customers stay in the pro annual plan, which represents 3.7% of the total.
+  - 92 customers decided to cancelled their plan after the free trail, which represents 9.2% of the total.
+- Most of the customer stay in the basic monthly plan, which meand that more than half the customers enjoy the service and decided to keep a plan but not the pro monthly.
+- The next big group is customer who decided to keep their subscription as pro monthly. This could be because their did not bother to change their plan.
+  
 **7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?**
 
 ```sql
+WITH cte AS 
+	(SELECT customer_id,
+	MAX(plan_id) AS final_plan
+	FROM subscriptions
+	WHERE start_date < '2020-12-31'
+	GROUP BY customer_id
+	ORDER BY customer_id)
+SELECT final_plan AS plan_id,
+COUNT(customer_id) AS customer_count,
+ROUND(COUNT(customer_id)::numeric/
+	  (SELECT COUNT(DISTINCT customer_id) FROM subscriptions)*100,2) AS percentage
+FROM cte
+GROUP BY plan_id
+ORDER BY plan_id;
 ```
 **Explanation:**
 
+- With a **CTE**, get the **MAX** `plan_id` for each customer. This would be the last plan per customer for the year 2020.
+- Using that `CTE` count the number of `customer_id` per group of `plan_id`. This would calculate the amount of customers per plan group by the end of the year.
+- Calculate the `percentage` of each grup.
+
 **Results and Analysis:**
 
+<img width="298" alt="image" src="https://github.com/user-attachments/assets/573a2881-b3ce-4d9a-847a-92a26be11603">
+
+- At the end of the year 2020:
+  - 19 customers are in a free trail plan.
+  - 224 customers are in the basic monthly plan. This represents a 22.4% of the total.
+  - 327 customer are in the pro monthly plan. The highest percentage for the year, 32.7%.
+  - 195 customers purchased the pro annual plan.
+  - Finally 235 customers finished the year cancelling their plans.
 ---
 
 **8. How many customers have upgraded to an annual plan in 2020?**
