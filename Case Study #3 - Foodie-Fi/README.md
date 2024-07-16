@@ -256,10 +256,25 @@ ORDER BY plan_id;
 **8. How many customers have upgraded to an annual plan in 2020?**
 
 ```sql
+SELECT COUNT(customer_id) AS customer_count
+FROM
+	(SELECT customer_id, start_date,
+	MAX(plan_id)
+	FROM subscriptions
+	GROUP BY customer_id, start_date
+	HAVING MAX(plan_id) = 3 AND start_date < '2020-12-31'
+	ORDER BY customer_id) AS x;
 ```
 **Explanation:**
 
+- Use a subquery to filter the table `subscriptions` by only those `customer_id` that have a `plan_id = 3` by the end of the year 2020.
+- In the main query **COUNT** the number of `customer_id`.
+
 **Results and Analysis:**
+
+<img width="125" alt="image" src="https://github.com/user-attachments/assets/1afc2e88-2493-48b6-952e-8548d9b12034">
+
+- There is a total of 195 customer who upgraded to the pro annual plan in the year 2020.
 
 ---
 
