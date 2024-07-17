@@ -59,7 +59,7 @@ FROM subscriptions;
 ```
 **Explanation:**
 
-- **COUNT** the **DISTINCT** `customer_id` in the table `subscriptions`
+- **COUNT** the **DISTINCT** `customer_id` in the table `subscriptions`.
 
 **Results and Analysis:**
 
@@ -140,6 +140,7 @@ FROM
 - In the main query, use the two variables from the subquery to calculate the `churn_percentage`.
 
 **Results and Analysis:**
+
 <img width="233" alt="image" src="https://github.com/user-attachments/assets/b47b7528-4108-457f-a0f6-85318091ed67">
 
 - The customer churn count is 307 in total. Representing a 30.7% of the total count of unique customers.
@@ -206,6 +207,7 @@ ORDER BY next_plan_id;
 - Using the **WHERE** clause, filter the resulting table only by those rows that had the `next_plan_id` right after the `plan_id = 0`.
 
 **Results and Analysis:**
+
 <img width="320" alt="image" src="https://github.com/user-attachments/assets/3d54482f-903c-489d-9228-092e7766474a">
 
 - There is a total of 1000 unique customers.
@@ -278,31 +280,102 @@ FROM
 
 ---
 
-**9. How many days on average does it take for a customer to an annual plan from the day they join Foodie-Fi?**
+**9. How many days on average does it take for a customer to change to an annual plan from the day they join Foodie-Fi?**
 
 ```sql
+WITH cte_trail AS
+	(SELECT *
+	FROM subscriptions
+	WHERE plan_id = 0),
+cte_annual AS 
+	(SELECT *
+	FROM subscriptions
+	WHERE plan_id = 3)
+SELECT 
+ROUND(AVG(ca.start_date - ct.start_date)::numeric,2) AS date_diff_avg
+FROM cte_trail ct
+JOIN cte_annual ca ON ct.customer_id = ca.customer_id;
 ```
 **Explanation:**
 
+- Using two separate **CTEs** get separate the `customer_id` and `start_date` for each of the two plans to be used.
+- Using the aggregate functon **AVG** calculate the average of the difference between the `start_date` of `plan_id = 3` and the `start_date` of `plan_id = 0`.
+
 **Results and Analysis:**
+
+<img width="109" alt="image" src="https://github.com/user-attachments/assets/d8fee030-69b6-4cbb-96b5-89c2734d83df">
+
+- On average it takes ~105 days for a customer to change to an annual plan from their free trail plan. 
 
 ---
 
 **10. Can you further breakdown this average value into 30 day periods (i.e. 0-30 days, 31-60 days etc)**
 
 ```sql
+WITH cte_trail AS
+	(SELECT *
+	FROM subscriptions
+	WHERE plan_id = 0),
+cte_annual AS 
+	(SELECT *
+	FROM subscriptions
+	WHERE plan_id = 3),
+cte_bins AS 
+	(SELECT ct.start_date AS trail_sd, 
+	ca.start_date AS annual_sd,
+	ca.start_date - ct.start_date AS date_diff,
+	WIDTH_BUCKET(ca.start_date - ct.start_date, 0, 365, 12) AS bin
+	FROM cte_trail AS ct
+	JOIN cte_annual AS ca ON ct.customer_id = ca.customer_id
+	ORDER BY date_diff)
+SELECT
+((bin - 1) * 30 || ' - ' || bin * 30 || ' days') AS period, 
+COUNT(*) AS customer_count
+FROM cte_bins
+GROUP BY bin
+ORDER BY bin;
 ```
 **Explanation:**
 
+- Using two separate **CTEs** get separate the `customer_id` and `start_date` for each of the two plans to be used.
+- A third **CTE** will be used with the function **WIDTH_BUCKET** to separate the `date_diff` of each customer into 12 different bins/buckets.
+- Using the last **CTE** , **COUNT** the amount of `customer_id` for each bin.
+
 **Results and Analysis:**
+
+<img width="224" alt="image" src="https://github.com/user-attachments/assets/04af1601-e67a-4ee2-81e6-bcb77550870c">
+
+- Most of the customers who change their plans from the free trail to annual do it within the first 30 days of starting the trail period.
+- There is a lower chance for a customer to change from a free trail to an annual plan if more than 210 days have gone by.
 
 ---
 **11. How many customers downgraded from a pro monthly to a basic monthly plan in 2020?**
 
 ```sql
+WITH cte_basic AS
+	(SELECT *
+	FROM subscriptions
+	WHERE plan_id = 1),
+cte_pro AS 
+	(SELECT *
+	FROM subscriptions
+	WHERE plan_id = 2)
+SELECT COUNT(*) AS customer_count
+FROM cte_basic cb
+JOIN cte_pro cp ON cb.customer_id = cp.customer_id
+WHERE cb.start_date - cp.start_date > 0
+AND cb.start_date < '2020-12-31' 
+AND cp.start_date < '2020-12-31';
 ```
 **Explanation:**
 
+- Using two separate **CTEs** get separate the `customer_id` and `start_date` for each of the two plans to be used.
+- Filter the table in the **WHERE** clause by those rows in which the difference between the `start_date` of 'basic monthly' and 'pro monthly' is grater than 0 (if its greater than 0 it meand that the `start_date` for the 'basic monthly' is later than the 'pro monthly' plan). Also, filter by those `start_date` before '2020-12-31'.
+
 **Results and Analysis:**
+
+<img width="123" alt="image" src="https://github.com/user-attachments/assets/aa095fed-453f-44c6-9c9a-bf8879e28573">
+
+- There are 0 customers who dowgraded from a pro monthly to a basic montly plan in 2020.
 
 ---
