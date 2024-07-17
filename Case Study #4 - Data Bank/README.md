@@ -149,34 +149,94 @@ GROUP BY region_id;
 **1. What is the unique count and total amount for each transaction type?**
 
 ```sql
+SELECT txn_type,
+SUM(txn_amount) AS total_amount
+FROM customer_transactions
+GROUP BY txn_type;
 ```
 
 **Explanation:**
 
+- Using the aggregrate function **SUM**, calculate the `total_amount` for each `txn_type`.
+
 **Results and Analysis:**
 
+<img width="259" alt="image" src="https://github.com/user-attachments/assets/ef6e85c1-1605-4e10-847b-ec341fe8faf2">
+
+- There are three unique type of transacitions : Purhcase, Withdrawal and Deposit.
+- The total amount for purchase is $806.537.
+- The total amount for withdrawal is $793.003.
+- The total amount for deposit is $1.359.168.
 ---
 
 **2. What is the average total historical deposit counts and amounts for all customers?**
 
 ```sql
+WITH cte_deposit AS
+	(SELECT customer_id,
+	COUNT(txn_type) AS deposit_count,
+	ROUND(AVG(txn_amount)::numeric,2) AS avg_amount
+	FROM customer_transactions
+	WHERE txn_type = 'deposit'
+	GROUP BY customer_id
+	ORDER BY customer_id)
+SELECT 
+ROUND(AVG(deposit_count)::numeric,2) AS avg_deposit,
+ROUND(avg(avg_amount)::numeric,2) AS avg_deposit
+FROM cte_deposit;
 ```
 
 **Explanation:**
 
+- Create a **CTE** to calculate the `deposit_count` and the `avg_amount` per `customer_id`.
+- Use the **WHERE** clause to filter results to only those with `txn_type = 'deposit'`
+- Finally calculate the overall average of `deposit_count` and `avg_amount`.
+
 **Results and Analysis:**
 
+<img width="201" alt="image" src="https://github.com/user-attachments/assets/6a1be208-67ee-4d22-b63c-bcdb0574e729">
+
+- In average customers make 5.34 deposits with an average value of $508.61.
 ---
 
 **3. For each month - how many Data Bank customers make more than 1 deposit and either 1 purchase or 1 withdrawal in a single month?**
 
 ```sql
+WITH cte AS 
+	(SELECT
+	EXTRACT(MONTH FROM txn_date) AS month_num,
+	TO_CHAR(txn_date,'Mon') AS month_str,
+	customer_id,
+	SUM(CASE WHEN txn_type = 'deposit' THEN 1 END) AS deposit_count,
+	SUM(CASE WHEN txn_type = 'withdrawal' THEN 1 END) AS withdrawal_count,
+	SUM(CASE WHEN txn_type = 'purchase' THEN 1 END) AS purchase_count
+	FROM customer_transactions
+	GROUP BY month_num,month_str,customer_id
+	ORDER BY month_num,month_str,customer_id)
+SELECT month_num, month_str,
+SUM(CASE
+	WHEN deposit_count > 1 AND (withdrawal_count >=1 OR purchase_count >=1)
+	THEN 1
+	end) AS customer_count
+FROM cte
+GROUP BY month_num, month_str
+ORDER BY month_num, month_str;
 ```
 
 **Explanation:**
 
+- Create a **CTE** to count the times each customer makes a 'deposit','withdrawal' and 'purchase'.
+- **GROUP BY** the 'month' to get the count for each customer per each month.
+- Using the **CTE** count the number of customer who fit the desire condition.
+
 **Results and Analysis:**
 
+<img width="312" alt="image" src="https://github.com/user-attachments/assets/923014ac-3f1e-48c3-9d56-fc1689fc8ed9">
+
+- In January there are 168 customers who made more than 1 deposit and either 1 purchase or 1 withdrawal.
+- In February there are 181 customers who made more than 1 deposit and either 1 purchase or 1 withdrawal.
+- In March there are 192 customers who made more than 1 deposit and either 1 purchase or 1 withdrawal.
+- In April there are 70 customers who made more than 1 deposit and either 1 purchase or 1 withdrawal.
 ---
 
 **4. What is the closing balance for each customer at the end of the month?**
