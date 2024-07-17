@@ -10,6 +10,7 @@ All the information regarding the case study has been sourced from [here](https:
 
 ## Problem Statement
 
+Foodie-Fi is a subscription-based streaming service for food enthusiasts. Our task is to analyze customer and subscription data to gain insights into user behavior, subscription plans, and revenue trends. We will need to create and run SQL queries to answer various business questions and provide actionable insights based on the data provided.
 
 ## Entity Relationship Diagram
 <img width="500" alt="image" src="https://github.com/user-attachments/assets/5b8e1159-73cd-4196-b2ea-6b9f1ac03c22">
