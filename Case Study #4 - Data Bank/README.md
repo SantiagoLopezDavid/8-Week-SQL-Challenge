@@ -242,21 +242,32 @@ ORDER BY month_num, month_str;
 **4. What is the closing balance for each customer at the end of the month?**
 
 ```sql
+WITH cte_current_month AS 
+	(SELECT customer_id,
+	EXTRACT(month FROM txn_date) AS txn_month,
+	TO_CHAR(txn_date,'Mon') AS txn_month_str,
+	SUM(CASE WHEN txn_type = 'deposit' THEN txn_amount
+		ELSE txn_amount*-1
+		END) OVER(PARTITION BY customer_id,EXTRACT(month FROM txn_date)) AS end_month
+	FROM customer_transactions
+	ORDER BY customer_id, txn_month, txn_month_str)
+SELECT customer_id, txn_month, txn_month_str,
+SUM(end_month) OVER(PARTITION BY customer_id ORDER BY txn_month) AS running_total
+FROM cte_current_month
+GROUP BY customer_id, txn_month, txn_month_str, end_month
+ORDER BY customer_id, txn_month, txn_month_str;
 ```
 
 **Explanation:**
 
+- Use a **CTE** to calculate the amount of funds in the account for each `customer_id`. This `end_month` will be independent for each month.
+- Using the past **CTE**, calculate a `running_total` for each `customer_id`. This **SUM** window function will take into account the amounts for the past month to calculate the current balance and the total at the end of the month.
+
 **Results and Analysis:**
 
+<img width="410" alt="image" src="https://github.com/user-attachments/assets/e82ed9a2-dfd8-4606-8345-f34d1728e197">
+
+- The previous table shows the results for the running total for customers 1,2,3,4,5 for each of the months where they had any transaction.
 ---
 
 **5. What is the percentage of customers who increase their closing balance by more than 5%?**
-
-```sql
-```
-
-**Explanation:**
-
-**Results and Analysis:**
-
----
