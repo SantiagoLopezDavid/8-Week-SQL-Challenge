@@ -5,14 +5,20 @@
 ## Table of contents
 1. Problem Statement.
 2. Entity Relationship Diagram.
-3. Solution.
+3. Solution:
   - Data Cleansing
   - Data Exploration
   - Before & After Analysis
 
 ## Problem Statement
 
+Danny is asking for your support to analyse his sales performance on Data Mart, an international online supermarket that specialises in fresh produce. Since June 2020 all Data Mart products now use sustainable packaging methods in every single step from the farm all the way to the customer.
 
+Danny needs your help to quantify the impact of this change on the sales performance for Data Mart and it’s separate business areas. The key business question he wants you to help him answer are the following:
+
+- What was the quantifiable impact of the changes introduced in June 2020?
+- Which platform, region, segment and customer types were the most impacted by this change?
+- What can we do about future introduction of similar sustainability updates to the business to minimise impact on sales?
 
 ## Entity Relationship Diagram
 
