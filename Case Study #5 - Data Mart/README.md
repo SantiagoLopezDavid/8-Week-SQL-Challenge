@@ -86,11 +86,20 @@ FROM weekly_sales
 **1. What day of the week is used for each week_date value?**
 
 ```sql
+SELECT 
+DISTINCT(TO_CHAR(week_date,'DAY')) AS week_day_str
+FROM clean_weekly_sales;
 ```
 
 **Explanation:**
+- Use the **TO_CHAR** function to formate the `week_date` as a string 'DAY'.
+- Select only the **DISTINCT** values.
 
 **Results and Analysis:**
+
+<img width="110" alt="image" src="https://github.com/user-attachments/assets/416b75a4-0403-4621-bf3a-f002a98e53e1">
+
+- The day of the week used for `week_date` is Monday.
 
 **2. What range of week numbers are missing from the dataset?**
 
