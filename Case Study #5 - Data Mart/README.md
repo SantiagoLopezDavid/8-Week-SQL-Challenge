@@ -303,7 +303,7 @@ ORDER BY calendar_year, platform;
 
 <img width="351" alt="image" src="https://github.com/user-attachments/assets/e898c644-a1e7-4443-8fbe-56d0aa37b518">
 
-- Shopify has a bigger `avg_size` transaction for all three years in the data set. The `avg_size` for Retail its been historically close to **$40**, whereas for Shopify it has been over $170.
+- Shopify has a bigger `avg_size` transaction for all three years in the data set. The `avg_size` for Retail its been historically close to **$40**, whereas for Shopify it has been over **$170**.
 
 ---
 ### Before & After Analysis
