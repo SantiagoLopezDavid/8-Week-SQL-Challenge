@@ -312,6 +312,52 @@ This technique is usually used when we inspect an important event and want to in
 
 We would include all `week_date` values for **2020-06-15** as the start of the period after the change and the previous week_date values would be before. Using this analysis approach - answer the following questions:
 
-- What is the total sales for the 4 weeks before and after **2020-06-15**? What is the growth or reduction rate in actual values and percentage of sales?
-- What about the entire 12 weeks before and after?
-- How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?
+- As a reference, we need to know what `week_number` is the baseline `week_date` 2020-06-15.
+```sql
+SELECT DISTINCT(week_number)
+FROM clean_weekly_sales
+WHERE calendar_year = 2020 AND week_date = '2020-06-15';
+```
+<img width="126" alt="image" src="https://github.com/user-attachments/assets/dc995270-0788-40ae-931c-567f500d0ebb">
+
+- Now we know that the baseline `week_number` is 25. We can use this number to answer the questions.
+
+**1. What is the total sales for the 4 weeks before and after **2020-06-15**? What is the growth or reduction rate in actual values and percentage of sales?**
+
+```sql
+```
+**Explanation:**
+
+**Results and Analysis:**
+
+**2. What about the entire 12 weeks before and after?**
+
+```sql
+```
+**Explanation:**
+
+**Results and Analysis:**
+
+**3. How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?**
+
+```sql
+```
+**Explanation:**
+
+**Results and Analysis:**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
