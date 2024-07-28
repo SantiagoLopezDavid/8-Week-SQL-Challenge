@@ -193,11 +193,37 @@ GROUP BY platform;
 **6. What is the percentage of sales for Retail vs Shopify for each month?**
 
 ```sql
+WITH total_sales_cte AS (
+	SELECT calendar_year, month_number,
+	SUM(sales) AS total_sales
+	FROM clean_weekly_sales
+	GROUP BY calendar_year, month_number
+	ORDER BY calendar_year, month_number),
+sales_platforms_cte AS (
+	SELECT calendar_year, month_number,
+	TO_CHAR(week_date, 'Month') AS month_str,
+	platform,
+	SUM(sales) AS total_sales
+	FROM clean_weekly_sales
+	GROUP BY calendar_year, month_number, 3, platform
+	ORDER BY calendar_year, month_number)
+SELECT spc.calendar_year, spc.month_number, spc.month_str, spc.platform,
+ROUND((spc.total_sales::numeric/tsc.total_sales)*100 ,2) AS sales_percentage
+FROM sales_platforms_cte AS spc
+JOIN total_sales_cte AS tsc 
+ON tsc.month_number = spc.month_number AND tsc.calendar_year = spc.calendar_year
+ORDER BY spc.calendar_year, spc.month_number, spc.platform;
 ```
 
 **Explanation:**
+- Create a **CTE** to calculate the `total_sales` per `calendar_year` and `month_number`. This will be the denominator when we need to perform the percentage calculation.
+- Create another **CTE** to calculate the `total_sales` per `calendar_year`, `month_number` and `platform`. This will be the numerator on the final percentage calculation.
+- Finally calculate the `sales_percentage` and **ROUND** the result to 2 decimal points.
 
 **Results and Analysis:**
+*Showing only rows for the year **2018**. Please note that the overall results consist of 40 rows.*
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/10109fbe-6354-49a7-bda8-a6f3cb3b080a">
 
 **7. What is the percentage of sales by demographic for each year in the dataset?**
 
