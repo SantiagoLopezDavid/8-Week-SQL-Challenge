@@ -229,11 +229,36 @@ ORDER BY spc.calendar_year, spc.month_number, spc.platform;
 **7. What is the percentage of sales by demographic for each year in the dataset?**
 
 ```sql
+WITH total_sales_cte AS (
+	SELECT calendar_year,
+	SUM(sales) AS total_sales
+	FROM clean_weekly_sales
+	GROUP BY calendar_year
+	ORDER BY calendar_year),
+sales_platforms_cte AS (
+	SELECT calendar_year,
+	demographic,
+	SUM(sales) AS total_sales
+	FROM clean_weekly_sales
+	GROUP BY calendar_year, demographic
+	ORDER BY calendar_year)
+SELECT spc.calendar_year, spc.demographic,
+ROUND((spc.total_sales::numeric/tsc.total_sales)*100 ,2) AS sales_percentage
+FROM sales_platforms_cte AS spc
+JOIN total_sales_cte AS tsc 
+ON tsc.calendar_year = spc.calendar_year
+ORDER BY spc.calendar_year, spc.demographic;
 ```
 
 **Explanation:**
+- We can use the same code from the last question. Making small adjustments to only take into account the `calendar_year` and changing the target variable to `demographic`.
 
 **Results and Analysis:**
+
+<img width="359" alt="image" src="https://github.com/user-attachments/assets/35d14f7e-50d8-4ea3-b55e-309c07341fb5">
+
+- Every year **'unknown'** demographics bring the highest percentage of total sales.
+- Out of the 'known' demographics, **Families** bring the highest percentage of total sales.
 
 **8. Which age_band and demographic values contribute the most to Retail sales?**
 
