@@ -288,11 +288,22 @@ ORDER BY 3 DESC;
 **9. Can we use the avg_transaction column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?**
 
 ```sql
+SELECT calendar_year, platform, 
+ROUND(SUM(avg_transaction)/COUNT(*),2) AS avg_size
+FROM clean_weekly_sales
+GROUP BY calendar_year, platform
+ORDER BY calendar_year, platform;
 ```
 
 **Explanation:**
+- Calculate the `avg_size` by dividing the **SUM** of all `avg_transaction` by the **COUNT** of rows on each group of `calendar_year` and `platform`.
+- **ROUND** the results to 2 decimal points.
 
 **Results and Analysis:**
+
+<img width="351" alt="image" src="https://github.com/user-attachments/assets/e898c644-a1e7-4443-8fbe-56d0aa37b518">
+
+- Shopify has a bigger `avg_size` transaction for all three years in the data set. The `avg_size` for Retail its been historically close to **$40**, whereas for Shopify it has been over $170.
 
 ---
 ### Before & After Analysis
