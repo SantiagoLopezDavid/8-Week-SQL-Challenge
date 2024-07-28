@@ -150,12 +150,25 @@ ORDER BY calendar_year;
 **4. What is the total sales for each region for each month?**
 
 ```sql
+SELECT region,
+TO_CHAR(week_date, 'Month') AS month_str,
+month_number, 
+SUM(sales) AS total_sales
+FROM clean_weekly_sales
+GROUP BY region, month_number,2
+ORDER BY region,month_number,2;
 ```
 
 **Explanation:**
+- Use the aggregate function **SUM** to get the `total_sales`.
+- Convert `week_date` to a string with the format 'Month'.
+- **GROUP BY** the `region`, `month_number` and `month_str`.
 
 **Results and Analysis:**
 
+<img width="458" alt="image" src="https://github.com/user-attachments/assets/8808acbc-0d23-4e4c-bcf0-8022153b7082">
+
+- The previous table only shows the `total_sales` for each `region` for the third month of the year.
 
 **5. What is the total count of transactions for each platform**
 
