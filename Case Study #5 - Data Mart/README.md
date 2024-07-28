@@ -263,11 +263,27 @@ ORDER BY spc.calendar_year, spc.demographic;
 **8. Which age_band and demographic values contribute the most to Retail sales?**
 
 ```sql
+SELECT age_band, demographic,
+ROUND((sales::numeric/total_sales)*100,2) AS contribution_percentage
+FROM
+	(SELECT DISTINCT age_band, demographic,
+	SUM(sales) OVER(PARTITION BY age_band, demographic) AS sales,
+	SUM(sales) OVER() AS total_sales
+	FROM clean_weekly_sales
+	WHERE platform = 'Retail') AS x
+ORDER BY 3 DESC;
 ```
 
 **Explanation:**
+- Using the **SUM** window function, calculate the **SUM** of `sales` by `age_band` and `demographic`.
+- Using the **SUM** window function, calculate the **SUM** of all `sales`.
+- Calculate the `contribution_percentage` and order the results based on this calculation.
 
 **Results and Analysis:**
+
+<img width="366" alt="image" src="https://github.com/user-attachments/assets/c5c60930-a840-41c7-b143-f28006368980">
+
+- The age_band and demographic that contributes the most to Retail Sales is *Unknown* with **40.52%**. The second biggest contributor is *Retirees Families* with **16.73%**
 
 **9. Can we use the avg_transaction column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?**
 
@@ -277,7 +293,6 @@ ORDER BY spc.calendar_year, spc.demographic;
 **Explanation:**
 
 **Results and Analysis:**
-
 
 ---
 ### Before & After Analysis
