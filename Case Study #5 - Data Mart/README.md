@@ -24,7 +24,6 @@ Danny needs your help to quantify the impact of this change on the sales perform
 
 <img width="320" alt="image" src="https://github.com/user-attachments/assets/0b9b33d5-b987-48ae-a2c3-047e44115223">
 
-
 ## Solution
 
 ### Data Cleansing
@@ -224,6 +223,8 @@ ORDER BY spc.calendar_year, spc.month_number, spc.platform;
 *Showing only rows for the year **2018**. Please note that the overall results consist of 40 rows.*
 
 <img width="500" alt="image" src="https://github.com/user-attachments/assets/10109fbe-6354-49a7-bda8-a6f3cb3b080a">
+
+- **Retail** brings above **97%** of total sales for each month of the year.
 
 **7. What is the percentage of sales by demographic for each year in the dataset?**
 
