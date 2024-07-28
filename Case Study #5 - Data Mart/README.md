@@ -173,11 +173,22 @@ ORDER BY region,month_number,2;
 **5. What is the total count of transactions for each platform**
 
 ```sql
+SELECT platform,
+COUNT(transactions) AS transaction_count
+FROM clean_weekly_sales
+GROUP BY platform;
 ```
 
 **Explanation:**
+- **COUNT** the `transactions` and **GROUP BY** the results by each `platform`.
 
 **Results and Analysis:**
+
+<img width="278" alt="image" src="https://github.com/user-attachments/assets/fc5a715d-f261-45e1-b175-10cb18e5fd8f">
+
+- There were a total of 8549 transactions done by the online platform Shopify.
+- There were a total of 8568 transactions done by retail.
+
 
 **6. What is the percentage of sales for Retail vs Shopify for each month?**
 
