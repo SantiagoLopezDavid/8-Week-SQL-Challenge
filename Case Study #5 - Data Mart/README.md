@@ -129,11 +129,23 @@ SELECT distinct year_weeks
 **3. How many total transactions were there for each year in the dataset?**
 
 ```sql
+SELECT calendar_year, 
+COUNT(transactions) transaction_count
+FROM clean_weekly_sales
+GROUP BY calendar_year
+ORDER BY calendar_year;
 ```
 
 **Explanation:**
+- **COUNT** the `transactions` and then **GROUP BY** each `calendar_year`.
 
 **Results and Analysis:**
+
+<img width="256" alt="image" src="https://github.com/user-attachments/assets/18b7f538-3b6e-43ae-af38-bdb28364ea1f">
+
+- In 2018 there were a total of 5698 transactions.
+- In 2019 there were a total of 5708 transactions.
+- In 2020 there were a total of 5711 transactions.
 
 **4. What is the total sales for each region for each month?**
 
@@ -143,6 +155,7 @@ SELECT distinct year_weeks
 **Explanation:**
 
 **Results and Analysis:**
+
 
 **5. What is the total count of transactions for each platform**
 
