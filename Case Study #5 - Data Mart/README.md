@@ -104,13 +104,29 @@ FROM clean_weekly_sales;
 **2. What range of week numbers are missing from the dataset?**
 
 ```sql
+WITH cte AS 
+	(SELECT generate_series(1,52) AS year_weeks)
+SELECT distinct year_weeks
+	FROM cte
+	LEFT JOIN clean_weekly_sales ON cte.year_weeks = clean_weekly_sales.week_number
+	WHERE week_number IS NULL
+	ORDER BY 1;
 ```
 
 **Explanation:**
 
+- Create a **CTE** to generate a range of number from 1 to 52.
+- **LEFT JOIN** the **CTE** with `clean_weekly_sales` on the `year_weeks`.
+- In the **WHERE** clause, filter the table by only those row were `year_weeks IS NULL`.
+
 **Results and Analysis:**
 
-**3. How many total transactions were there for each year in the dataset?
+<img width="145" alt="image" src="https://github.com/user-attachments/assets/ed702b9d-cd34-4e67-bd64-ac10b0c43b36"> 
+<img width="145" alt="image" src="https://github.com/user-attachments/assets/a0a863a0-24f7-401c-a7f0-5abe846ea270">
+
+- The range of week numbers missing are (1,12) and (37,52).
+
+**3. How many total transactions were there for each year in the dataset?**
 
 ```sql
 ```
