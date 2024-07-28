@@ -46,6 +46,40 @@ In a single query, perform the following operations and generate a new table in 
 - Ensure all **NULL** string values with an "unknown" string value in the original `segment` column as well as the new `age_band` and `demographic` columns.
 - Generate a new `avg_transaction` column as the `sales` value divided by `transactions` rounded to 2 decimal places for each record.
 
+**Solution**
+
+```sql
+DROP TABLE IF EXISTS clean_weekly_sales;
+CREATE TABLE clean_weekly_sales AS ( 
+SELECT
+TO_DATE(week_date,'DD/MM/YY') as week_date,
+DATE_PART('week', to_date(week_date,'DD/MM/YY')) AS week_number,
+DATE_PART('month', to_date(week_date,'DD/MM/YY')) AS month_number,
+DATE_PART('year', to_date(week_date,'DD/MM/YY')) AS calendar_year,
+region,
+platform,
+CASE
+	WHEN segment = 'null' THEN 'unknown'
+	ELSE segment
+	END AS segment,
+CASE
+	WHEN SUBSTRING (segment, 2, 1) = '1' THEN 'Young Adults'
+	WHEN SUBSTRING (segment, 2, 1) = '2' THEN 'Middle Aged'
+	WHEN SUBSTRING (segment, 2, 1) IN  ('3','4') THEN 'Retirees'
+	ELSE 'unknown'
+	END AS age_band,
+CASE
+	WHEN SUBSTRING (segment, 1, 1) = 'C' THEN 'Couples'
+	WHEN SUBSTRING (segment, 1, 1) = 'F' THEN 'Families'
+	ELSE 'unknown'
+	END AS demographic,
+customer_type,
+transactions,
+sales,
+ROUND(sales::numeric/transactions,2) AS avg_transaction
+FROM weekly_sales
+);
+```
 ---
 ### Data Exploration
 
