@@ -389,7 +389,7 @@ FROM cte;
 
 <img width="264" alt="image" src="https://github.com/user-attachments/assets/b3af8edf-f5ae-4148-8c02-a16fcc0e01aa">
 
-- Increasing the range for comparison the change of packaging has had a sustantial **negative** impact on sales. Total sales have decrease a **214%** after the change of packaging. This is very concerning for the company and corrective measures need to be done before numbers keep getting worst.
+- Increasing the range for comparison the change of packaging has had a sustantial **negative** impact on sales. Total sales have decrease a **214%** after the change of packaging, losing a total of $152.325.394. This is very concerning for the company and corrective measures need to be done before numbers keep getting worst.
 
 **3. How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?**
 
