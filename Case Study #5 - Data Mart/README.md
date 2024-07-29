@@ -393,9 +393,60 @@ FROM cte;
 
 **3. How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?**
 
+- First period = 4 weeks before and after:
+
 ```sql
+WITH cte AS (
+	SELECT 
+	calendar_year,
+	SUM(CASE
+		WHEN week_number BETWEEN 21 AND 24 THEN sales END) AS sum_before,
+	SUM(CASE
+		WHEN week_number BETWEEN 25 AND 28 THEN sales END) AS sum_after
+	FROM clean_weekly_sales
+	group by calendar_year)
+SELECT 
+calendar_year,
+sum_after - sum_before AS sales_variance,
+ROUND((sum_after::numeric - sum_before::numeric)*100/sum_before,2) AS percentage_variance
+FROM cte
+ORDER BY calendar_year
 ```
-**Explanation:**
 
 **Results and Analysis:**
+
+<img width="386" alt="image" src="https://github.com/user-attachments/assets/dc1a7fdb-2cef-43d1-9571-84ffcd209369">
+
+In both years before **2020** and the change of packaging, the *before* and *after* periods show an increase in the `percentage_variance` and `sales_variance`. For the year **2018** the company saw an **19%** increment in sales for a total of $4.102.105. The following year, the `percentage_variance` was **10%** or $2.336.594.
+
+Now in **2020** the already mentioned drop of **115%** in sales is more concerning giving the past two year had some percentage of growth. 
+
+- Second period = 12 weeks before and after:
+
+```sql
+WITH cte AS (
+	SELECT 
+	calendar_year,
+	SUM(CASE
+		WHEN week_number BETWEEN 13 AND 24 THEN sales END) AS sum_before,
+	SUM(CASE
+		WHEN week_number BETWEEN 25 AND 37 THEN sales END) AS sum_after
+	FROM clean_weekly_sales
+	group by calendar_year)
+SELECT 
+calendar_year,
+sum_after - sum_before AS sales_variance,
+ROUND((sum_after::numeric - sum_before::numeric)*100/sum_before,2) AS percentage_variance
+FROM cte
+ORDER BY calendar_year
+```
+
+**Results and Analysis:**
+
+<img width="385" alt="image" src="https://github.com/user-attachments/assets/eb056c84-e391-4241-a58a-4e3feefd1712">
+
+From a **12 week** perspective the it seems like the tendency is a decrease in the level of sales of the company. The results show that after the year **2018** the `sales_variance` is negavite. In the year **2019** the `percentage_variance` is a negative **30%**, followed by a negative **214%** in the year **2020**. Althought the there is a difference of **184%** between these two years, the table shows a tendency to low sales performance.
+
+It is very clear the sharp turn that the company has had in only three years. Going from growing **163%** in sales in **2018** to lose almost **400%** of sales in the next two years. This is very concerning and shows the results of their decisions. This results might not be just the consequences of a change in packaging but an accumulation of poor decisions that took a growing company to very serious situation.
+
 
