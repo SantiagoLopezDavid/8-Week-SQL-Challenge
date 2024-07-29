@@ -312,23 +312,46 @@ This technique is usually used when we inspect an important event and want to in
 
 We would include all `week_date` values for **2020-06-15** as the start of the period after the change and the previous week_date values would be before. Using this analysis approach - answer the following questions:
 
-- As a reference, we need to know what `week_number` is the baseline `week_date` 2020-06-15.
+---
+As a reference, we need to know what `week_number` is the baseline `week_date` 2020-06-15.
+
 ```sql
 SELECT DISTINCT(week_number)
 FROM clean_weekly_sales
 WHERE calendar_year = 2020 AND week_date = '2020-06-15';
 ```
+
 <img width="126" alt="image" src="https://github.com/user-attachments/assets/dc995270-0788-40ae-931c-567f500d0ebb">
 
 - Now we know that the baseline `week_number` is 25. We can use this number to answer the questions.
+---
 
 **1. What is the total sales for the 4 weeks before and after **2020-06-15**? What is the growth or reduction rate in actual values and percentage of sales?**
 
+**Total sales for the 4 weeks before and after the baseline:**
+
+```sql
+SELECT 
+SUM(CASE
+	WHEN week_number BETWEEN 21 AND 24 THEN sales END) AS sum_before,
+SUM(CASE
+	WHEN week_number BETWEEN 25 AND 29 THEN sales END) AS sum_after
+FROM clean_weekly_sales
+WHERE calendar_year = 2020;
+```
+**Results and Analysis:**
+
+<img width="194" alt="image" src="https://github.com/user-attachments/assets/a0fb69c7-a7dd-4944-a1cd-cd7dcb85bc37">
+
+- The total sales after the baseline is greater than before.
+
+**Growth and reduction rate**
+
 ```sql
 ```
-**Explanation:**
 
 **Results and Analysis:**
+
 
 **2. What about the entire 12 weeks before and after?**
 
