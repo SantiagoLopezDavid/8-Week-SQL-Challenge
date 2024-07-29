@@ -335,23 +335,38 @@ SELECT
 SUM(CASE
 	WHEN week_number BETWEEN 21 AND 24 THEN sales END) AS sum_before,
 SUM(CASE
-	WHEN week_number BETWEEN 25 AND 29 THEN sales END) AS sum_after
+	WHEN week_number BETWEEN 25 AND 28 THEN sales END) AS sum_after
 FROM clean_weekly_sales
 WHERE calendar_year = 2020;
 ```
 **Results and Analysis:**
 
-<img width="194" alt="image" src="https://github.com/user-attachments/assets/a0fb69c7-a7dd-4944-a1cd-cd7dcb85bc37">
+<img width="195" alt="image" src="https://github.com/user-attachments/assets/9a7b3066-ce40-4ea0-ac8d-14c32fa7cdcd">
 
 - The total sales after the baseline is greater than before.
 
 **Growth and reduction rate**
 
 ```sql
+WITH cte AS (
+	SELECT 
+	SUM(CASE
+		WHEN week_number BETWEEN 21 AND 24 THEN sales END) AS sum_before,
+	SUM(CASE
+		WHEN week_number BETWEEN 25 AND 28 THEN sales END) AS sum_after
+	FROM clean_weekly_sales
+	WHERE calendar_year = 2020)
+SELECT 
+sum_before - sum_after AS sales_variance,
+ROUND((sum_before::numeric - sum_after::numeric)*100/sum_after,2) AS percentage_variance
+FROM cte;
 ```
 
 **Results and Analysis:**
 
+<img width="262" alt="image" src="https://github.com/user-attachments/assets/b81046e6-a6c5-4bda-8968-bcb52753f12d">
+
+- Based on the results, the relative change from 'before' and 'after' reflects a negative impact. Since the change to sustainable packaging sales have gone down a total of $26.884.188 or a 115%. compare to before. This is a big direct consequence from the change, image has a mayor part to play in consumer behaviour. This could lead the cusumer to think that the quality of the product is not the same or they might not even recognize it.
 
 **2. What about the entire 12 weeks before and after?**
 
