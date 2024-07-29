@@ -10,6 +10,8 @@
   - Data Exploration
   - Before & After Analysis
 
+All the information regarding the case study has been sourced from [here](https://8weeksqlchallenge.com/case-study-5/)
+
 ## Problem Statement
 
 Danny is asking for your support to analyse his sales performance on Data Mart, an international online supermarket that specialises in fresh produce. Since June 2020 all Data Mart products now use sustainable packaging methods in every single step from the farm all the way to the customer.
