@@ -46,20 +46,47 @@ FROM users;
 **2. How many cookies does each user have on average?**
 
 ```sql
+SELECT
+ROUND(SUM(cookie_count)::numeric/500,2) AS avg_cookie
+FROM
+	(SELECT user_id, COUNT(cookie_id) AS cookie_count
+	FROM users
+	GROUP BY user_id) AS x;
 ```
 
 **Explanation:**
+- Use a subquery to **COUNT** the number of `cookie_id` per `user_id`.
+- Using the subquery results, **SUM** the `cookie_count` and divide by the total number of unique `user_id` (500).
 
 **Results and Analysis:**
+
+<img width="96" alt="image" src="https://github.com/user-attachments/assets/4d4b9330-3ced-4c92-bf69-2077bb1f1e35">
+
+- On average every `user_id` has 3.56 `cookie_id`.
 
 **3. What is the unique number of visits by all users per month?**
 
 ```sql
+SELECT
+EXTRACT(month FROM event_time) AS month_num,
+TO_CHAR(event_time, 'Month') AS month_str,
+COUNT(DISTINCT visit_id) AS visit_count
+FROM events
+GROUP BY 1,2
+ORDER BY 1,2;
 ```
 
 **Explanation:**
+- **EXTRACT** the month number from `event_time`.
+- Format the month from `event_time` as a string for each month.
+- **COUNT** each unique `visit_id` for the variables in the **GROUP BY** clause.
 
 **Results and Analysis:**
+
+<img width="282" alt="image" src="https://github.com/user-attachments/assets/66c24f38-7674-46b2-8b8a-442ff0b9ba8e">
+
+- The month with the least number of unique visits is **May**.
+- The month with the highest number of unique visits is **February**.
 
 **4. What is the number of events for each event type?**
 
