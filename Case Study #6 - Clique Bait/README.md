@@ -29,11 +29,19 @@ In this case study - you are required to support the founder and CEO Danny's vis
 **1. How many users are there?**
 
 ```sql
+SELECT 
+COUNT(DISTINCT(user_id)) AS user_count
+FROM users;
 ```
 
 **Explanation:**
+- **COUNT** the unique number of `user_id` from the table `users`.
 
 **Results and Analysis:**
+
+<img width="98" alt="image" src="https://github.com/user-attachments/assets/526fe3fc-2b92-419a-b8f0-87c126903670">
+
+- There are **500** unique `user_id`.
 
 **2. How many cookies does each user have on average?**
 
