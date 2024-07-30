@@ -191,6 +191,7 @@ LIMIT 3;
 **8. What is the number of views and cart adds for each product category?**
 
 ```sql
+
 ```
 
 **Explanation:**
