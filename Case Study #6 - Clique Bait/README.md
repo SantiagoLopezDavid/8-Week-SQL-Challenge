@@ -164,11 +164,29 @@ FROM cte;
 **7. What are the top 3 pages by number of views?**
 
 ```sql
+SELECT events.page_id,page_name,
+COUNT(events.event_type) AS view_count
+FROM events
+JOIN page_hierarchy ON events.page_id = page_hierarchy.page_id
+WHERE event_type = 1
+GROUP BY events.page_id,page_name
+ORDER BY 3 DESC
+LIMIT 3;
 ```
 
 **Explanation:**
+- **COUNT** the `event_type` for each `page_id`.
+- Filter the results by only those `page_id` where the `event_type = 1`.
+- **ORDER BY** the `view_count` in descending order.
+- **LIMIT** the result to only the top 3.
 
 **Results and Analysis:**
+
+<img width="328" alt="image" src="https://github.com/user-attachments/assets/084f0101-019f-444c-b58a-bc0b21a1dd16">
+
+- The page with the most views is **All Products** with a total of 3174 views.
+- The second most viewed page is **Checkout** with 2103 views.
+- The least viewed page is the **Home Page** with 1782 views.
 
 **8. What is the number of views and cart adds for each product category?**
 
