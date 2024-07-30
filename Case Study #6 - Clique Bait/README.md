@@ -91,11 +91,25 @@ ORDER BY 1,2;
 **4. What is the number of events for each event type?**
 
 ```sql
+SELECT e.event_type,
+ei.event_name,
+COUNT(e.event_type) AS event_count
+FROM events e
+JOIN event_identifier ei ON e.event_type = ei.event_type
+GROUP BY e.event_type, ei.event_name
+ORDER BY e.event_type;
 ```
 
 **Explanation:**
-
+- **COUNT** the number of rows for each `event_type`.
+- Use a **JOIN** statement to bring the `event_name` into the table.
+- 
 **Results and Analysis:**
+
+<img width="348" alt="image" src="https://github.com/user-attachments/assets/260c3c31-6535-46a5-96ee-1c36bfa276d6">
+
+- The event with the highest number of appearances is **Page View** with almost 21.000.
+- The rest of the events have less than 10.000 appearances. The second most frecuent event is **Add to Cart**.
 
 **5. What is the percentage of visits which have a purchase event?**
 
