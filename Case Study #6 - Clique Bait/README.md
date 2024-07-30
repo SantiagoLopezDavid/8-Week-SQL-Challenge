@@ -114,20 +114,52 @@ ORDER BY e.event_type;
 **5. What is the percentage of visits which have a purchase event?**
 
 ```sql
+WITH purchase_cte AS 
+	(SELECT COUNT(event_type) purchase_count
+	FROM events
+	WHERE event_type = 3),
+total_visits_cte AS
+	(SELECT COUNT(distinct visit_id) AS total_event
+	FROM events)
+SELECT 
+ROUND((purchase_count::numeric/total_event)*100,2) AS purchase_percentage
+FROM purchase_cte, total_visits_cte;
 ```
 
 **Explanation:**
+- Create two separate **CTE**. In the first one, **COUNT** the `event_type` where there is a purchase. In the second, **COUNT** the unique `visit_id` from the table (`total_event` or visits)
+- With these two **CTE** results, calculate the `purchase_percentage`.
 
 **Results and Analysis:**
+
+<img width="153" alt="image" src="https://github.com/user-attachments/assets/c7632075-2cf0-464f-bf4f-e542f3468564">
+
+- The **49.86%** of visits have a purchase event.
 
 **6. What is the percentage of visits which view the checkout page but do not have a purchase event?**
 
 ```sql
+WITH cte AS 
+	(SELECT COUNT(visit_id) AS visit_count
+	FROM events
+	WHERE page_id = 12 AND visit_id NOT IN
+		(SELECT visit_id
+		FROM events
+		WHERE event_type = 3))
+SELECT
+ROUND(visit_count::numeric/(SELECT COUNT(DISTINCT visit_id) FROM events)*100,2) AS visit_percentage
+FROM cte;
 ```
 
 **Explanation:**
+- **COUNT** the `visit_id` that have a `page_id = 12` but are not included in the group of `visit_id` that have a purchase event.
+- Calculate the `visit_percentage` taking into account all unique visits to the website.
 
 **Results and Analysis:**
+
+<img width="124" alt="image" src="https://github.com/user-attachments/assets/ae679cd1-eaca-4a60-bfdd-603a05202460">
+
+- There is only a **9.15%** of visits that view the checkout page but did not follow up with the purchase.
 
 **7. What are the top 3 pages by number of views?**
 
