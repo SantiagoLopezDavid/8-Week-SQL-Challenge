@@ -191,21 +191,57 @@ LIMIT 3;
 **8. What is the number of views and cart adds for each product category?**
 
 ```sql
-
+SELECT
+product_category,
+SUM(CASE WHEN event_type = 1 THEN 1 ELSE 0 END) AS view_count,
+SUM(CASE WHEN event_type = 2 THEN 1 ELSE 0 END) AS cart_add_count
+FROM events AS e
+JOIN page_hierarchy AS ph ON ph.page_id = e.page_id
+WHERE product_category IS NOT NULL
+GROUP BY product_category
+ORDER BY 2 DESC;
 ```
 
 **Explanation:**
 
+- Use **SUM** and a **CASE** statement to count the number of views and card-adds per `product_category`.
+- **JOIN** the tables `events` and `page_hierarchy` to get the `product_category` based on its `page_id`.
+- Filter the resulting tables in the **WHERE** clause by omiting any **NULL** values for `product_category`.
+
 **Results and Analysis:**
+
+<img width="361" alt="image" src="https://github.com/user-attachments/assets/a2385a68-16c7-489f-b824-227ae5e339a9">
+
+- The product category with the most views and card-adds is **Shellfish**.
+- The product category with the least views and card-add is **Luxury**.
 
 **9. What are the top 3 products by purchases?**
 
 ```sql
+SELECT
+page_name,
+SUM(CASE WHEN event_type = 2 THEN 1 ELSE 0 END) AS purchased_count
+FROM events AS e
+JOIN page_hierarchy AS ph ON ph.page_id = e.page_id
+WHERE e.page_id NOT IN (1,2,12,13) AND
+visit_id IN (SELECT visit_id FROM events WHERE event_type = 3)
+GROUP BY page_name
+ORDER BY 2 DESC
+LIMIT 3;
 ```
 
 **Explanation:**
+- Since we cannot directly count the number of purchases per product, we have to assume that every product that was added to the cart was purchased if the user has an event 3.
+- Use **SUM** and a **CASE** statement to count the number of card-adds per `product_category`.
+- Filter the data in the **WHERE** clause to omit the pages 1,2,12,13 and to take into account only those `visit_id` were there was actually a purchase.
+- **LIMIT** the results to the top 3.
 
 **Results and Analysis:**
+
+<img width="284" alt="image" src="https://github.com/user-attachments/assets/889cfd0b-ad57-456d-b163-c6f437c14350">
+
+- The top three products by purchases are **Lobster**, **Oyster** and **Crab**.
+- The product with the highest number of purchases is **Lobster** with 754.
 
 ---
 ### **B. Product Funnel Analysis**
