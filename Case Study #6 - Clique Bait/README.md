@@ -255,6 +255,107 @@ Using a single SQL query - create a new output table which has the following det
 
 Additionally, create another table which further aggregates the data for the above points but this time for each product category instead of individual products.
 
+---
+**1. Create new `products` table:**
+
+```sql
+CREATE TABLE products AS
+WITH w AS (
+WITH cte_views_cart AS
+	(SELECT ph.page_name,
+	SUM(CASE WHEN e.event_type = 1 THEN 1 ELSE 0 END) AS view_count,
+	SUM(CASE WHEN e.event_type = 2 THEN 1 ELSE 0 END) AS add_cart_count
+	FROM events AS e
+	JOIN page_hierarchy AS ph ON e.page_id = ph.page_id
+	WHERE e.page_id NOT IN (1,2,12,13)
+	GROUP BY ph.page_name 
+	ORDER BY 2 DESC),
+abandoned_cte AS 
+	(SELECT
+	page_name,
+	SUM(CASE WHEN event_type = 2 THEN 1 ELSE 0 END) AS abandoned_count
+	FROM events AS e
+	JOIN page_hierarchy AS ph ON ph.page_id = e.page_id
+	WHERE e.page_id NOT IN (1,2,12,13) AND
+	visit_id NOT IN (SELECT visit_id FROM events WHERE event_type = 3)
+	GROUP BY page_name),
+purchased_cte AS 
+	(SELECT
+	page_name,
+	SUM(CASE WHEN event_type = 2 THEN 1 ELSE 0 END) AS purchased_count
+	FROM events AS e
+	JOIN page_hierarchy AS ph ON ph.page_id = e.page_id
+	WHERE e.page_id NOT IN (1,2,12,13) AND
+	visit_id IN (SELECT visit_id FROM events WHERE event_type = 3)
+	GROUP BY page_name)
+SELECT 
+cvc.page_name as product,
+cvc.view_count,
+cvc.add_cart_count,
+ac.abandoned_count,
+pc.purchased_count
+FROM cte_views_cart AS cvc
+JOIN abandoned_cte AS ac ON ac.page_name = cvc.page_name
+JOIN purchased_cte AS pc ON pc.page_name = cvc.page_name
+)
+SELECT * FROM w;
+```
+
+**The resulting table:**
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/03e1fdca-25d9-442e-8e16-926b44a18a3d">
+
+
+**2. Create new `product_category` table:**
+
+```sql
+CREATE TABLE product_category AS
+WITH w AS (
+with cte_views_cart AS
+	(SELECT ph.product_category,
+	SUM(CASE WHEN e.event_type = 1 THEN 1 ELSE 0 END) AS view_count,
+	SUM(CASE WHEN e.event_type = 2 THEN 1 ELSE 0 END) AS add_cart_count
+	FROM events AS e
+	JOIN page_hierarchy AS ph ON e.page_id = ph.page_id
+	WHERE e.page_id NOT IN (1,2,12,13)
+	GROUP BY ph.product_category 
+	ORDER BY 2 DESC),
+abandoned_cte AS 
+	(SELECT
+	product_category,
+	SUM(CASE WHEN event_type = 2 THEN 1 ELSE 0 END) AS abandoned_count
+	FROM events AS e
+	JOIN page_hierarchy AS ph ON ph.page_id = e.page_id
+	WHERE e.page_id NOT IN (1,2,12,13) AND
+	visit_id NOT IN (SELECT visit_id FROM events WHERE event_type = 3)
+	GROUP BY product_category),
+purchased_cte AS 
+	(SELECT
+	product_category,
+	SUM(CASE WHEN event_type = 2 THEN 1 ELSE 0 END) AS purchased_count
+	FROM events AS e
+	JOIN page_hierarchy AS ph ON ph.page_id = e.page_id
+	WHERE e.page_id NOT IN (1,2,12,13) AND
+	visit_id IN (SELECT visit_id FROM events WHERE event_type = 3)
+	GROUP BY product_category)
+SELECT 
+cvc.product_category,
+cvc.view_count,
+cvc.add_cart_count,
+ac.abandoned_count,
+pc.purchased_count
+FROM cte_views_cart AS cvc
+JOIN abandoned_cte AS ac ON ac.product_category = cvc.product_category
+JOIN purchased_cte AS pc ON pc.product_category = cvc.product_category
+)
+SELECT * FROM w;
+```
+
+**The resulting table:**
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/ce8dbe8b-03c6-46be-b45c-f2f95844ca49">
+
+---
 Use your 2 new output tables - answer the following questions:
 
 **1. Which product had the most views, cart adds and purchases?**
