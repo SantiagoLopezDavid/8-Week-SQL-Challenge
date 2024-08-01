@@ -361,47 +361,99 @@ Use your 2 new output tables - answer the following questions:
 **1. Which product had the most views, cart adds and purchases?**
 
 ```sql
+SELECT product, view_count
+FROM products
+ORDER BY view_count DESC
+LIMIT 1;
+---
+SELECT product, add_cart_count
+FROM products
+ORDER BY add_cart_count DESC
+LIMIT 1;
+---
+SELECT product, purchased_count
+FROM products
+ORDER BY purchased_count DESC
+LIMIT 1;
 ```
-
-**Explanation:**
-
 **Results and Analysis:**
+
+1. Most views:
+
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/4d962c52-4185-4601-9944-89a755d69fc4">
+
+- **Oyster** has the most views with 1568.
+
+2. Most cart adds and purchases: 
+
+<img width="272" alt="image" src="https://github.com/user-attachments/assets/4338d1fd-2db7-4d3d-ac5b-77409f058d22">
+
+<img width="280" alt="image" src="https://github.com/user-attachments/assets/11866b48-95cc-48ca-b1fa-a591072571ee">
+
+- **Lobster** has the most cart-add with 968 and purchases with 754.
 
 **2. Which product was most likely to be abandoned?**
 
 ```sql
+SELECT product, abandoned_count
+FROM products
+ORDER BY abandoned_count DESC
+LIMIT 1;
 ```
 
-**Explanation:**
-
 **Results and Analysis:**
+
+<img width="287" alt="image" src="https://github.com/user-attachments/assets/0427a89b-9018-434b-87ba-0273bdfa30ea">
+
+- **Russian Caviar** is most likely to be abandoned with 249 counts.
 
 **3. Which product had the highest view to purchase percentage?**
 
 ```sql
+SELECT product,
+ROUND((purchased_count::numeric/view_count)*100,2) AS view_purchase_percentage
+FROM products
+ORDER BY 2 DESC
+LIMIT 1;
 ```
 
-**Explanation:**
-
 **Results and Analysis:**
+
+<img width="333" alt="image" src="https://github.com/user-attachments/assets/a1e6ec16-0870-4fad-beaa-9f5b2693abfa">
+
+- Almost half of the time an user views the product **Lobster**, they end up purchasing it.
 
 **4. What is the average conversion rate from view to cart add?**
 
 ```sql
+SELECT ROUND(AVG(conversion_rate),2) AS avg_conversion_rate
+FROM
+	(SELECT product,
+	ROUND((add_cart_count::numeric/view_count)*100,2) AS conversion_rate
+	FROM products) AS x;
 ```
 
-**Explanation:**
-
 **Results and Analysis:**
+
+<img width="145" alt="image" src="https://github.com/user-attachments/assets/bf639251-956f-4d30-a777-8201e46877b7">
+
+- The average conversion rate from view to cart add is **60.95%**.
 
 **5. What is the average conversion rate from cart add to purchase?**
 
 ```sql
+SELECT ROUND(AVG(conversion_rate),2) AS avg_conversion_rate
+FROM
+	(SELECT product,
+	ROUND((purchased_count::numeric/add_cart_count)*100,2) AS conversion_rate
+	FROM products) AS x;
 ```
 
-**Explanation:**
-
 **Results and Analysis:**
+
+<img width="147" alt="image" src="https://github.com/user-attachments/assets/cc6d734b-0256-4137-8ec9-feee1093e8f4">
+
+- The average conversion rate from cart add to purchase is **75.93%**.
 
 ---
 ### **C. Campaigns Analysis**
