@@ -471,7 +471,29 @@ Generate a table that has 1 single row for every unique visit_id record and has 
 - `click`: count of ad clicks for each visit
 - **(Optional column)** `cart_products`: a comma separated text value with products added to the cart sorted by the order they were added to the cart (hint: use the `sequence_number`)
 
-Use the subsequent dataset to generate at least 5 insights for the Clique Bait team - bonus: prepare a single A4 infographic that the team can use for their management reporting sessions, be sure to emphasise the most important points from your findings.
+**Solution:**
+
+```sql
+SELECT u.user_id, e.visit_id,
+MIN(event_time) as visit_start_time,
+SUM(CASE WHEN event_type = 1 THEN 1 ELSE 0 END) AS page_views,
+SUM(CASE WHEN event_type = 2 THEN 1 ELSE 0 END) AS cart_adds,
+SUM(CASE WHEN event_type = 3 THEN 1 ELSE 0 END) AS purchase,
+ci.campaign_name,
+SUM(CASE WHEN event_type = 4 THEN 1 ELSE 0 END) AS impression,
+SUM(CASE WHEN event_type = 5 THEN 1 ELSE 0 END) AS click,
+STRING_AGG(CASE WHEN p.product_id IS NOT NULL AND e.event_type = 2 THEN p.page_name ELSE NULL END, 
+    ', ' ORDER BY e.sequence_number) AS cart_products
+FROM events AS e
+JOIN users AS u ON u.cookie_id = e.cookie_id
+LEFT JOIN campaign_identifier AS ci
+	ON e.event_time BETWEEN ci.start_date AND ci.end_date
+JOIN page_hierarchy AS p ON p.page_id = e.page_id
+GROUP BY u.user_id, e.visit_id, ci.campaign_name
+ORDER BY u.user_id, e.visit_id;
+```
+
+Use the subsequent dataset to generate at least 5 insights for the Clique Bait team.
 
 Some ideas you might want to investigate further include:
 
