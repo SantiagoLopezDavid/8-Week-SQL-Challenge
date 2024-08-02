@@ -222,9 +222,7 @@ GROUP BY member;
 
 <img width="182" alt="image" src="https://github.com/user-attachments/assets/45e37d1b-9d29-40bc-acb7-a494081d8156">
 
-- In average members and non-members make the company similar revenue. The difference between them is less than  
-
-
+- In average members and non-members make the company similar revenue. The difference between their average is 1.23.
 
 ---
 
