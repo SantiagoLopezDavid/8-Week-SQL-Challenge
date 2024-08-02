@@ -92,38 +92,86 @@ ORDER BY 3 DESC;
 **1. How many unique transactions were there?**
 
 ```sql
+SELECT COUNT(DISTINCT txn_id) AS count_transactions
+FROM sales;
 ```
 
-**Explanation:**
-
 **Results and Analysis:**
+
+<img width="140" alt="image" src="https://github.com/user-attachments/assets/4031ac27-3c70-42f8-9d8d-337f4de05f39">
+
+- There are 2500 unique transactions.
 
 **2. What is the average unique products purchased in each transaction?**
 
 ```sql
+SELECT ROUND(AVG(product_count),2) AS avg_unique_products
+FROM
+	(SELECT txn_id, COUNT(prod_id) AS product_count
+	FROM sales
+	GROUP BY txn_id) AS x;
 ```
 
 **Explanation:**
 
+- Use a subquery to **COUNT** the `prod_id` for each `txn_id `.
+- Use the aggregate function **AVG** to get the `avg_unique_products`.
+
 **Results and Analysis:**
+
+<img width="149" alt="image" src="https://github.com/user-attachments/assets/4065019b-e00e-4689-9782-a9a0ba23744c">
+
+- In average, users buy around 6 unique products per transaction.
 
 **3. What are the 25th, 50th and 75th percentile values for the revenue per transaction?**
 
 ```sql
+SELECT 
+PERCENTILE_CONT(0.25) WITHIN GROUP(ORDER BY revenue) AS percentile_25,
+PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY revenue) AS percentile_50,
+PERCENTILE_CONT(0.75) WITHIN GROUP(ORDER BY revenue) AS percentile_75
+FROM
+	(SELECT txn_id, 
+	SUM(qty*price) AS revenue
+	FROM sales
+	GROUP BY txn_id) AS x;
 ```
 
 **Explanation:**
 
+- Use a subquery to calculate the `revenue` per `txn_id`.
+- Use the results from the subquery to calculate the percentiles with the **PERCENTILE_CONT** function.
+
 **Results and Analysis:**
+
+<img width="370" alt="image" src="https://github.com/user-attachments/assets/ba24d7b1-33f1-46cf-b4be-ddd6ea6d6f82">
+
+- The value for percentile 25 is 375.75
+- The value for percentile 50 is 509.5
+- The value for percentile 75 is 647.
 
 **4. What is the average discount value per transaction?**
 
 ```sql
+WITH discount_cte AS 
+	(SELECT txn_id, 
+	ROUND(SUM(qty*price*(discount::numeric/100)),2) AS discount_value
+	FROM sales
+	GROUP BY txn_id)
+SELECT ROUND(AVG(discount_value),2) AS avg_discount_value
+FROM discount_cte;
 ```
 
 **Explanation:**
 
+- Using a **CTE** calculate the `discount_value` per `txn_id`.
+- From the **CTE** calculate the **AVG** `discount_value`.
+
 **Results and Analysis:**
+
+<img width="142" alt="image" src="https://github.com/user-attachments/assets/e8f3c859-ffcb-44ea-bf30-1ee451a16501">
+
+- The average discount value per transaction is 62.49.
 
 **5. What is the percentage split of all transactions for members vs non-members?**
 
