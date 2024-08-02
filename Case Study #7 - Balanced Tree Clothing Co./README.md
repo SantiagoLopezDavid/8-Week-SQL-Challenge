@@ -176,20 +176,55 @@ FROM discount_cte;
 **5. What is the percentage split of all transactions for members vs non-members?**
 
 ```sql
+WITH member_cte AS
+	(SELECT member,
+	COUNT(DISTINCT txn_id) AS txn_count
+	FROM sales
+	GROUP BY member)
+SELECT member, txn_count,
+ROUND((txn_count::numeric/(SELECT COUNT(DISTINCT txn_id) FROM sales))*100,2) AS percentage
+FROM member_cte;
 ```
 
 **Explanation:**
 
+- Using a **CTE**, **COUNT** the unique `txn_id` by `member`.
+- Calculate the `percentage` base on the total of unique `txn_id` in the `sales` table for each `member`. 
+
 **Results and Analysis:**
+
+**True : Member
+False : Non-Member**
+
+<img width="265" alt="image" src="https://github.com/user-attachments/assets/cb7864ef-852e-4f17-97cf-ccd7090df769">
+
+- **Members** have a bigger percentage split for all transactions compare to **Non-members**. 
 
 **6. What is the average revenue for member transactions and non-member transactions?**
 
 ```sql
+SELECT member, 
+ROUND(AVG(revenue),2) AS avg_revenue
+FROM 
+	(SELECT txn_id, member, 
+	SUM(qty * price) AS revenue
+	FROM sales
+	GROUP BY txn_id, member) AS x
+GROUP BY member;
 ```
 
 **Explanation:**
 
+- Use a subquery to calculate the `revenue` for each individual `txn_id`.
+- Use the result from the subquery to calculate the **AVG** from the `revenue` column per `member`.
+
 **Results and Analysis:**
+
+<img width="182" alt="image" src="https://github.com/user-attachments/assets/45e37d1b-9d29-40bc-acb7-a494081d8156">
+
+- In average members and non-members make the company similar revenue. The difference between them is less than  
+
+
 
 ---
 
