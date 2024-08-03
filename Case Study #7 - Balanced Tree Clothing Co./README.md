@@ -474,10 +474,36 @@ ORDER BY 2 DESC;
 **10. What is the most common combination of at least 1 quantity of any 3 products in a 1 single transaction?**
 
 ```sql
+WITH cte AS
+	(SELECT s.txn_id, pd.product_name AS product
+	FROM sales AS s
+	JOIN product_details AS pd ON pd.product_id = s.prod_id)
+SELECT c1.product AS prod1, 
+c2.product AS prod2, 
+c3.product AS prod3, 
+COUNT(*) AS comb_count       
+FROM cte c1
+INNER JOIN cte c2 ON c2.txn_id = c1.txn_id 
+	AND c1.product < c2.product
+INNER JOIN cte c3 ON c3.txn_id = c1.txn_id
+	AND c2.product < c3.product
+GROUP BY c1.product, c2.product, c3.product
+ORDER BY 4 DESC
+LIMIT 1;
 ```
 
 **Explanation:**
 
+- Use a **CTE** to get the `product_name` for each `prod_id` in the `sales` table.
+- **JOIN** the **CTE** three times with itself **ON** the same `txn_id`.
+- Since the order of the products does not matter, we dont need to count the same combination more than once.
+- **GROUP BY** all three products.
+- **LIMIT** the results by 1 row to show the highest `comb_count`.
+
 **Results and Analysis:**
 
+<img width="613" alt="image" src="https://github.com/user-attachments/assets/04b5bc6a-d2f5-4bb5-b949-f4f5fb54e782">
+
+- The combination of 3 products that is the most common is (Grey fashion Jacket - Womens, Teal Button Up Shirt - Mens, White Tee Shirt - Mens) with 
+352 counts.
 ---
