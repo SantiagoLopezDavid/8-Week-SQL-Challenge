@@ -14,6 +14,10 @@ All the information regarding the case study has been sourced from [here](https:
 
 ## Problem Statement
 
+Balanced Tree Clothing Company prides themselves on providing an optimised range of clothing and lifestyle wear for the modern adventurer!
+
+Danny, the CEO of this trendy fashion company has asked you to assist the team’s merchandising teams analyse their sales performance and generate a basic financial report to share with the wider business.
+
 ## Entity Relationship Diagram
 
 <img width="500" alt="image" src="https://github.com/user-attachments/assets/e606fde8-18b1-43d3-8b67-094cac3970ad">
