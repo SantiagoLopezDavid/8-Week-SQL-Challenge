@@ -450,12 +450,27 @@ ORDER BY pd.category_id, pd.category_name;
 **9. What is the total transaction “penetration” for each product? (hint: penetration = number of transactions where at least 1 quantity of a product was purchased divided by total number of transactions)**
 
 ```sql
+SELECT pd.product_name, 
+ROUND((COUNT(DISTINCT s.txn_id)::numeric/
+	(SELECT COUNT(DISTINCT txn_id) FROM sales))*100,2) AS penetration
+FROM sales AS s
+JOIN product_details AS pd ON pd.product_id = s.prod_id
+GROUP BY pd.product_name
+ORDER BY 2 DESC;
 ```
 
 **Explanation:**
 
+- **COUNT** the unique `txn_id` for each `product_name`.
+- Use a subquery to calculate the total for unique `txn_id`.
+- Use both this results to calculate the `penetration` for each `product_name`.
+
 **Results and Analysis:**
 
+<img width="299" alt="image" src="https://github.com/user-attachments/assets/9fd44920-a3db-40d0-8ce5-34845a7363e4">
+
+- The product with the highest penetration percentage is **Navy Solid Socks - Mens** with over 50% of appearances in all transactions.
+  
 **10. What is the most common combination of at least 1 quantity of any 3 products in a 1 single transaction?**
 
 ```sql
