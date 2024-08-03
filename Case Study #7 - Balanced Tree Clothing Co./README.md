@@ -360,29 +360,92 @@ ORDER BY category_id, category_name;
 **6. What is the percentage split of revenue by product for each segment?**
 
 ```sql
+WITH product_cte AS 
+	(SELECT pd.segment_id, pd.segment_name, pd.product_name,
+	SUM(s.qty * s.price) AS product_revenue
+	FROM sales AS s
+	JOIN product_details AS pd ON pd.product_id = s.prod_id
+	GROUP BY pd.segment_id, pd.segment_name, pd.product_name
+	ORDER BY pd.segment_id, pd.segment_name),
+segment_cte AS 
+	(SELECT pd.segment_id, pd.segment_name,
+	SUM(s.qty * s.price) AS total_revenue
+	FROM sales AS s
+	JOIN product_details AS pd ON pd.product_id = s.prod_id
+	GROUP BY pd.segment_id, pd.segment_name
+	ORDER BY pd.segment_id, pd.segment_name)
+SELECT pc.segment_id, pc.segment_name, pc.product_name, 
+ROUND((pc.product_revenue::numeric/total_revenue)*100,2) AS percentage
+FROM product_cte AS pc
+JOIN segment_cte AS sc ON sc.segment_id = pc.segment_id;
 ```
 
 **Explanation:**
 
+- Use a **CTE** to calculate the **SUM** of `revenue` per `product_name` for each `segment_id`.
+- Use a second **CTE** to get the `total_revenue` per `segment_id`.
+- Use both results from the **CTEs** to calculate the `percentage` for each `product_name`.
+
 **Results and Analysis:**
+
+<img width="541" alt="image" src="https://github.com/user-attachments/assets/d7d1187b-e5cb-4ab1-b2c8-4001a6d997d8">
+
+- The product with the highest percentage for **Jeans** is **Black Straight Jeans - Womens**.
+- The product with the highest percetage for **Jacket** is **Grey Fashion Jacket - Womens**.
+- The product with the highest percentage for **Shirt** is **Blue Polo Shirt - Mens**.
+- The product with the highest percentage for **Socks** is **Navy Solid Socks - Mens**.
 
 **7. What is the percentage split of revenue by segment for each category?**
 
 ```sql
+WITH segment_cte AS 
+	(SELECT pd.category_id, pd.category_name,pd.segment_id, pd.segment_name,
+	SUM(s.qty * s.price) AS segment_revenue
+	FROM sales AS s
+	JOIN product_details AS pd ON pd.product_id = s.prod_id
+	GROUP BY pd.category_id, pd.category_name,pd.segment_id, pd.segment_name
+	ORDER BY pd.segment_id, pd.segment_name),
+category_cte AS 
+	(SELECT pd.category_id, pd.category_name,
+	SUM(s.qty * s.price) AS total_revenue
+	FROM sales AS s
+	JOIN product_details AS pd ON pd.product_id = s.prod_id
+	GROUP BY pd.category_id, pd.category_name
+	ORDER BY pd.category_id, pd.category_name)
+SELECT sc.category_id, sc.category_name, sc.segment_name, 
+ROUND((sc.segment_revenue::numeric/total_revenue)*100,2) AS percentage
+FROM segment_cte AS sc
+JOIN category_cte AS cc ON sc.category_id = cc.category_id;
 ```
 
 **Explanation:**
 
+- We can use the same code from the previous question.
+
 **Results and Analysis:**
+
+<img width="484" alt="image" src="https://github.com/user-attachments/assets/f42f9301-fd90-4819-9e60-1eaad7366a3d">
+
+- The segment with the highest percentage from the **Womens** category is **Jacket**.
+- The segment with the highest percentage from the **Mens** category is **Shirt**.
 
 **8. What is the percentage split of total revenue by category?**
 
 ```sql
+SELECT pd.category_id, pd.category_name,
+ROUND((SUM(s.qty::numeric * s.price::numeric)/
+	   (SELECT SUM(qty*price) FROM sales))*100,2) AS percentage
+FROM sales AS s
+JOIN product_details AS pd ON pd.product_id = s.prod_id
+GROUP BY pd.category_id, pd.category_name
+ORDER BY pd.category_id, pd.category_name;
 ```
 
-**Explanation:**
-
 **Results and Analysis:**
+
+<img width="339" alt="image" src="https://github.com/user-attachments/assets/1d00aafc-fc7d-45cb-9f01-989720cf18f8">
+
+- **Mens** have the highest percentage split from the two categories.
 
 **9. What is the total transaction “penetration” for each product? (hint: penetration = number of transactions where at least 1 quantity of a product was purchased divided by total number of transactions)**
 
