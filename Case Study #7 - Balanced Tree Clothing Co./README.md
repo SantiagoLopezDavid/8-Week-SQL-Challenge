@@ -231,47 +231,131 @@ GROUP BY member;
 **1. What are the top 3 products by total revenue before discount?**
 
 ```sql
+SELECT prod_id, product_name, revenue
+FROM 
+	(SELECT s.prod_id, pd.product_name, 
+	SUM(s.qty * s.price) AS revenue,
+	RANK() OVER(ORDER BY SUM(s.qty * s.price) DESC) AS rnk
+	FROM sales AS s
+	JOIN product_details AS pd ON pd.product_id = s.prod_id
+	GROUP BY s.prod_id, pd.product_name) AS x
+WHERE rnk IN(1,2,3);
 ```
 
 **Explanation:**
 
+- Use a subquery to calculate the **SUM** of the `revenue` per `prod_id`.
+- Use the **RANK** function to organize the results from highest to lowest based on the `revenue`.
+- Use the subquery to filter the results only by those rows with `rnk = 1,2,3`
+
 **Results and Analysis:**
+
+<img width="418" alt="image" src="https://github.com/user-attachments/assets/f7fbb39d-8f13-4a91-970b-08c021bc8e4c">
+
+- The top 3 products based on their revenue before discounts are **Blue Polo Shirt - Man**, **Gret Fashion Jacket - Womens** and **White Tee Shirt - Mens**.
 
 **2. What is the total quantity, revenue and discount for each segment?**
 
 ```sql
+SELECT pd.segment_id, pd.segment_name,
+SUM(s.qty) AS sum_quantity,
+SUM(s.qty * s.price) AS revenue,
+ROUND(SUM(s.qty*s.price*(s.discount::numeric/100)),2) AS sum_discount
+FROM sales AS s
+JOIN product_details AS pd ON pd.product_id = s.prod_id
+GROUP BY pd.segment_id, pd.segment_name
+ORDER BY pd.segment_id;
 ```
 
 **Explanation:**
 
+- Use the aggregate function **SUM** to get the `sum_quantity`, `revenue` and `sum_discount`.
+- Group results by their `segment_id` and `segment_name`.
+
 **Results and Analysis:**
+
+<img width="540" alt="image" src="https://github.com/user-attachments/assets/7dd7549e-3152-4d85-b96a-e45279e0ce28">
+
+- The segment with the highest revenue before discounts is **Shirts**.
 
 **3. What is the top selling product for each segment?**
 
 ```sql
+WITH cte AS
+	(SELECT pd.segment_id, pd.segment_name, pd.product_name,  
+	SUM(s.qty) AS sum_quantity,
+	RANK() OVER(PARTITION BY pd.segment_id, pd.segment_name ORDER BY SUM(s.qty) DESC) AS rnk
+	FROM sales AS s
+	JOIN product_details AS pd ON pd.product_id = s.prod_id
+	GROUP BY pd.segment_id, pd.segment_name, pd.product_name
+	ORDER BY pd.segment_id, pd.segment_name)
+SELECT segment_id, segment_name, product_name, sum_quantity
+FROM cte
+WHERE rnk = 1
+ORDER BY segment_id, segment_name;
 ```
 
 **Explanation:**
 
+- In a **CTE**, use the function **RANK** based on the `sum_quantity` to get the order of products within each `segment_id`.
+- Get the results from the **CTE** where the `rnk = 1`.
+
 **Results and Analysis:**
+
+<img width="547" alt="image" src="https://github.com/user-attachments/assets/fc22c044-509f-4454-ad10-05420d8840af">
+
+- The top selling product from all segments is **Grey Fashion Jacket - Womens** from the **Jacket** segment.
 
 **4. What is the total quantity, revenue and discount for each category?**
 
 ```sql
+SELECT pd.category_id, pd.category_name,
+SUM(s.qty) AS sum_quantity,
+SUM(s.qty * s.price) AS revenue,
+ROUND(SUM(s.qty*s.price*(s.discount::numeric/100)),2) AS sum_discount
+FROM sales AS s
+JOIN product_details AS pd ON pd.product_id = s.prod_id
+GROUP BY pd.category_id, pd.category_name
+ORDER BY pd.category_id;
 ```
 
 **Explanation:**
 
+- We can use the same code from the previous questions. The only thing to change is `category_id` and `category_name`.
+
 **Results and Analysis:**
+
+<img width="540" alt="image" src="https://github.com/user-attachments/assets/4531c438-15c5-44b5-8ff2-e50a402b4348">
+
+- **Mens** category makes more revenue before discounts than **Womens**
 
 **5. What is the top selling product for each category?**
 
 ```sql
+WITH cte AS
+	(SELECT pd.category_id, pd.category_name, pd.product_name,  
+	SUM(s.qty) AS sum_quantity,
+	RANK() OVER(PARTITION BY pd.category_id, pd.category_name ORDER BY SUM(s.qty) DESC) AS rnk
+	FROM sales AS s
+	JOIN product_details AS pd ON pd.product_id = s.prod_id
+	GROUP BY pd.category_id, pd.category_name, pd.product_name
+	ORDER BY pd.category_id, pd.category_name)
+SELECT category_id, category_name, product_name, sum_quantity
+FROM cte
+WHERE rnk = 1
+ORDER BY category_id, category_name;
 ```
 
 **Explanation:**
 
+- We can use the same code from the previous questions. The only thing to change is `category_id` and `category_name`.
+
 **Results and Analysis:**
+
+<img width="540" alt="image" src="https://github.com/user-attachments/assets/b8a409b7-aa0b-419e-9d99-e06144d84ac1">
+
+- The product that sells the most for **Womans** is the **Grey Fashion Jacket**.
+- The product that sells the most for **Mens** is the **Blue Polo Shirt**.
 
 **6. What is the percentage split of revenue by product for each segment?**
 
