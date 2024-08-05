@@ -11,6 +11,8 @@
   - C. Segment Analysis.
   - D. Index Analysis.
 
+All the information regarding the case study has been sourced from [here](https://8weeksqlchallenge.com/case-study-8/)
+
 ## Problem Statement
 
 Danny created Fresh Segments, a digital marketing agency that helps other businesses analyse trends in online ad click behaviour for their unique customer base.
