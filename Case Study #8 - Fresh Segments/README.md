@@ -115,9 +115,9 @@ FROM interest_map;
 
 6.. What sort of table join should we perform for our analysis and why? Check your logic by checking the rows where `interest_id = 21246` in your joined output and include all columns from `fresh_segments.interest_metrics` and all columns from `fresh_segments.interest_map` except from the `id` column.
 
-- We can perfomr a **INNER JOIN** between the tables `interest_map` and `clean_interest_metrics`.
+- We can perform an **INNER JOIN** between the tables `interest_map` and `clean_interest_metrics`.
 
-``sql
+```sql
 SELECT 
 imt._month, imt._year, imt.month_year, imt.interest_id, imt.composition, 
 imt.index_value, imt.ranking, imt.percentile_ranking, im.interest_name, 
