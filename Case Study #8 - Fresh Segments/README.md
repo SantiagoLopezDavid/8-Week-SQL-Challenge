@@ -153,12 +153,27 @@ WHERE month_year < created_at;
 **1. Which interests have been present in all `month_year` dates in our dataset?**
 
 ```sql
+SELECT interest_id,
+COUNT(DISTINCT month_year) month_count
+FROM clean_interest_metrics
+GROUP BY interest_id
+HAVING COUNT(DISTINCT month_year) = 
+	(SELECT COUNT(DISTINCT month_year) FROM clean_interest_metrics);
 ```
 
 **Explanation:**
 
+- Using a subquery, get the total number of unique `month_year` values.
+- Group by all `interest_id` and get the **COUNT** of unique `month_year` for all of them.
+- Using the **HAVING** clause, filter the resulting `interest_id` to those which `month_count` is equal to the total unique `month_year`.
+
 **Results and Analysis:**
 
+Partial screenshot from resulting table:
+
+<img width="146" alt="image" src="https://github.com/user-attachments/assets/dc62e8be-2ed1-49af-b7d0-05da926ef7da">
+
+There are a total of 480 interest that are present in all 14 `month_year` dates.
 
 **2. Using this same `total_months` measure - calculate the cumulative percentage of all records starting at 14 months - which `total_months` value passes the 90% cumulative percentage value?**
 
