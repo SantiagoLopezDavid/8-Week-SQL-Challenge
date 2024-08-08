@@ -274,7 +274,7 @@ GROUP BY 1;
 
 **1. Using our filtered dataset by removing the interests with less than 6 months worth of data, which are the top 10 and bottom 10 interests which have the largest composition values in any `month_year`? Only use the maximum composition value for each interest but you must keep the corresponding `month_year`.**
 
-**Largest composition**
+- **Largest composition**
 
 ```sql
 SELECT month_year, interest_id,
@@ -295,7 +295,7 @@ LIMIT 10;
 <img width="369" alt="image" src="https://github.com/user-attachments/assets/c871201c-df05-4c21-8676-cc77abc9de99">
 
 
-**Smalles composition**
+- **Smallest composition**
 
 ```sql
 SELECT month_year, interest_id,
