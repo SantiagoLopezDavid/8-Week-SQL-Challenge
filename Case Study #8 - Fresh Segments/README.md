@@ -317,38 +317,80 @@ LIMIT 10;
 **2. Which 5 interests had the lowest average `ranking` value?**
 
 ```sql
+SELECT interest_id , interest_name,
+ROUND(AVG(ranking),2) avg_ranking
+FROM interest_removed
+JOIN interest_map ON interest_map.id = interest_removed.interest_id::integer
+GROUP BY interest_id, interest_name
+ORDER BY 3 
+LIMIT 5;
 ```
 
 **Explanation:**
 
+- Calculate the **AVG** of `ranking` for all `interest_id`.
+- Limit the results to 5 rows.
+
 **Results and Analysis:**
+
+<img width="426" alt="image" src="https://github.com/user-attachments/assets/c4014690-6f03-41db-b821-6c826d40ddfc">
 
 **3. Which 5 interests had the largest standard deviation in their `percentile_ranking` value?**
 
 ```sql
+SELECT interest_id,
+ROUND(STDDEV(percentile_ranking)::numeric, 2) AS std_dev
+FROM interest_removed
+GROUP BY interest_id
+ORDER BY 2 DESC
+LIMIT 5;
 ```
 
 **Explanation:**
 
+- Calculate the **STDDEV** of the `percentile_ranking` value for all `interest_id`.
+- Order the results based on the `std_dev` in descending order.
+- Limit the results to 5 rows.
+
 **Results and Analysis:**
+
+<img width="226" alt="image" src="https://github.com/user-attachments/assets/33af7659-0e8a-432a-b9f1-5b82e5ea571c">
+
 
 **4. For the 5 interests found in the previous question - what was minimum and maximum `percentile_ranking` values for each interest and its corresponding `year_month` value? Can you describe what is happening for these 5 interests?**
 
 ```sql
+WITH cte AS 
+	(SELECT interest_id,
+	MIN(percentile_ranking) AS min_percentile,
+	MAX(percentile_ranking) AS max_percentile
+	FROM interest_removed
+	WHERE interest_id IN 
+		(SELECT interest_id
+		FROM interest_removed
+		GROUP BY interest_id
+		ORDER BY STDDEV(percentile_ranking) DESC
+		LIMIT 5)
+	GROUP BY interest_id)
+SELECT cte.interest_id, 
+cte.min_percentile,
+MIN(t1.month_year) AS month_year_min,
+cte.max_percentile,
+MIN(t2.month_year) AS month_year_max
+FROM cte 
+LEFT JOIN interest_removed AS t1 ON cte.min_percentile = t1.percentile_ranking
+LEFT JOIN interest_removed AS t2 ON cte.max_percentile = t2.percentile_ranking
+GROUP BY 1, 2, 4
+ORDER BY 1;
 ```
 
-**Explanation:**
-
 **Results and Analysis:**
+
+<img width="644" alt="image" src="https://github.com/user-attachments/assets/d6997958-e8ae-41e3-97c1-d9a42b20e800">
 
 **5. How would you describe our customers in this segment based off their composition and ranking values? What sort of products or services should we show to these customers and what should we avoid?**
 
-```sql
-```
-
-**Explanation:**
-
-**Results and Analysis:**
+**Analysis:**
 
 ---
 ### **D. Index Analysis**
