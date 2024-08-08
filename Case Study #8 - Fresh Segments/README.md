@@ -178,38 +178,96 @@ There are a total of 480 interest that are present in all 14 `month_year` dates.
 **2. Using this same `total_months` measure - calculate the cumulative percentage of all records starting at 14 months - which `total_months` value passes the 90% cumulative percentage value?**
 
 ```sql
+WITH total_months_cte AS 
+	(SELECT interest_id,
+	COUNT(DISTINCT month_year) AS total_months
+	FROM clean_interest_metrics
+	GROUP BY interest_id
+	ORDER BY 2),
+interest_count_cte AS
+	(SELECT 
+	total_months, 
+	COUNT(interest_id) interest_count
+	FROM total_months_cte
+	GROUP BY total_months
+	ORDER BY total_months)
+SELECT total_months, interest_count,
+ROUND((100 * SUM(interest_count) OVER(ORDER BY total_months DESC)/
+	SUM(interest_count) OVER()),2) AS cum_percentage
+FROM interest_count_cte
+GROUP BY total_months, interest_count;
 ```
-
 **Explanation:**
 
+- Use one **CTE** to **COUNT** the number of unique `month_year` for all `interest_id`.
+- Use the first **CTE** to **GROUP BY** the results by the **total_months**.
+- As a final query, use the **interest_count_cte** to calculate the `cum_percentage` in descending order.
+
 **Results and Analysis:**
+
+<img width="344" alt="image" src="https://github.com/user-attachments/assets/dea5db24-a141-436e-ae01-41c35f69f8a5">
+
+- Starting from the 14th month down, its at the sixth month that the cummulative percentage passes the 90% value.
 
 **3. If we were to remove all `interest_id` values which are lower than the `total_months` value we found in the previous question - how many total data points would we be removing?**
 
 ```sql
+SELECT COUNT(*) AS data_points_count
+FROM clean_interest_metrics
+WHERE interest_id in
+	(SELECT interest_id
+	FROM clean_interest_metrics
+	GROUP BY interest_id
+	HAVING COUNT(month_year) < 6);
 ```
 
 **Explanation:**
+- Using a subquery, get all the `interest_id` where the **COUNT** of `month_year` is less than 6.
+- In the main query, **COUNT** all the rows of `interest_id` that correspond to those in the subquery.
 
 **Results and Analysis:**
+
+<img width="135" alt="image" src="https://github.com/user-attachments/assets/56401354-80a3-4f35-9a99-504362bfe93f">
+
+- We would be removing a total of 400 data points.
 
 **4. Does this decision make sense to remove these data points from a business perspective? Use an example where there are all 14 months present to a removed `interest` example for your arguments - think about what it means to have less months present from a segment perspective.**
 
+It does makes sense to remove this data points from the data set. 
+- First of all, the 400 data points represent 3% of all the data set. It is a very small percentage to change the final outcome or analysis.
+- Second, `interest_id`s that have not been present in more than 6 months of the year might not represent a valuable trend but just random topics of interest of consumers. The client could be more interested in `interest_id` with a bigger presence during the year.
+
+From a segment perspective, less months means being able to focus on what actually will bring more value to the client. It not just having less data to analyse, but having more meaningful data to draw insights from.
+
+Let's create a new table `interest_removed` with the `interest_id` removed:
+
 ```sql
+CREATE TABLE interest_removed AS
+(SELECT *
+FROM clean_interest_metrics
+WHERE interest_id not in
+	(SELECT interest_id
+	FROM clean_interest_metrics
+	GROUP BY interest_id
+	HAVING COUNT(month_year) < 6));
 ```
-
-**Explanation:**
-
-**Results and Analysis:**
 
 **5. After removing these interests - how many unique interests are there for each month?**
 
 ```sql
+SELECT month_year,
+COUNT(DISTINCT interest_id) AS interest_count
+FROM interest_removed
+GROUP BY 1;
 ```
 
 **Explanation:**
+- From the new table `interest_removed`, **COUNT** all unique `interest_id`.
+- **GROUP BY** `month_year`.
 
 **Results and Analysis:**
+
+<img width="211" alt="image" src="https://github.com/user-attachments/assets/b2658ec5-852c-4b6f-a860-599ffc723a7f">
 
 ---
 ### **C. Segment Analysis**
