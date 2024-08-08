@@ -274,12 +274,45 @@ GROUP BY 1;
 
 **1. Using our filtered dataset by removing the interests with less than 6 months worth of data, which are the top 10 and bottom 10 interests which have the largest composition values in any `month_year`? Only use the maximum composition value for each interest but you must keep the corresponding `month_year`.**
 
+**Largest composition**
+
 ```sql
+SELECT month_year, interest_id,
+MAX(composition) AS max_composition
+FROM interest_removed
+GROUP BY month_year, interest_id
+ORDER BY 3 DESC
+LIMIT 10;
 ```
 
 **Explanation:**
 
+- **GROUP BY** `month_year` and `interest_id` and get the **MAX** value for `composition` for each `interest_id`.
+- **ORDER BY** the **MAX** value in descending order.
+
 **Results and Analysis:**
+
+<img width="369" alt="image" src="https://github.com/user-attachments/assets/c871201c-df05-4c21-8676-cc77abc9de99">
+
+
+**Smalles composition**
+
+```sql
+SELECT month_year, interest_id,
+MAX(composition) AS max_composition
+FROM interest_removed
+GROUP BY month_year, interest_id
+ORDER BY 3 
+LIMIT 10;
+```
+**Explanation:**
+
+- **ORDER BY** the **MAX** value in ascending order.
+
+**Results and Analysis:**
+
+<img width="367" alt="image" src="https://github.com/user-attachments/assets/41f5acba-40b2-4b69-8d8f-1b3b7f3039a6">
+
 
 **2. Which 5 interests had the lowest average `ranking` value?**
 
