@@ -402,11 +402,28 @@ Average composition can be calculated by dividing the `composition` column by th
 **1. What is the top 10 interests by the average composition for each month?**
 
 ```sql
+WITH cte AS 
+	(SELECT *,
+	ROUND((composition/index_value)::numeric , 2) AS avg_composition,
+	RANK() OVER(PARTITION BY month_year 
+				ORDER BY ROUND((composition/index_value)::numeric , 2) DESC) AS rnk
+	FROM interest_removed)
+SELECT month_year, interest_id, avg_composition, rnk
+FROM cte
+WHERE rnk <= 10;
 ```
 
 **Explanation:**
 
+- Using a **CTE** calculate the `avg_composition` based on the given formula.
+- Use the **RANK** window function to order the `interest_id` based on their `avg_composition` per each `month_year`.
+- Use the **CTE** to extract only those `interest_id` which `rnk >= 10`.
+
 **Results and Analysis:**
+
+**The results in the following screenshot are only of the first two months. The entire table has 142 rows.**
+
+<img width="450" alt="image" src="https://github.com/user-attachments/assets/f4252f92-3242-42fe-94c0-23af5d3e4eee">
 
 **2. For all of these top 10 interests - which interest appears the most often?**
 
