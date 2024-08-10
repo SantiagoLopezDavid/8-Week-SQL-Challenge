@@ -388,10 +388,6 @@ ORDER BY 1;
 
 <img width="644" alt="image" src="https://github.com/user-attachments/assets/d6997958-e8ae-41e3-97c1-d9a42b20e800">
 
-**5. How would you describe our customers in this segment based off their composition and ranking values? What sort of products or services should we show to these customers and what should we avoid?**
-
-**Analysis:**
-
 ---
 ### **D. Index Analysis**
 
