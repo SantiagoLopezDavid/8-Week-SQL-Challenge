@@ -428,38 +428,86 @@ WHERE rnk <= 10;
 **2. For all of these top 10 interests - which interest appears the most often?**
 
 ```sql
+WITH cte AS 
+	(SELECT *,
+	ROUND((composition/index_value)::numeric , 2) AS avg_composition,
+	RANK() OVER(PARTITION BY month_year 
+				ORDER BY ROUND((composition/index_value)::numeric , 2) DESC) AS avg_rnk
+	FROM interest_removed),
+interest_rank_cte as 
+	(SELECT interest_id, 
+	COUNT(*) AS interest_count,
+	RANK() OVER(ORDER BY COUNT(*) DESC) AS rnk
+	FROM cte
+	WHERE avg_rnk <=10
+	GROUP BY interest_id)
+SELECT interest_id, interest_name, interest_count
+FROM interest_rank_cte
+JOIN interest_map ON interest_map.id = interest_rank_cte.interest_id::integer
+WHERE rnk = 1;
 ```
 
 **Explanation:**
 
+- We can use the first **CTE** from the previous questions to calculate a table with `avg_composition` and the `avg_rnk` for each `month_year`.
+- Based on the first **CTE**, we will create another one to **COUNT** the times each `interest_id` appears and **RANK** this count.
+- Finally in the main query, we will filter by those `interest_id` with a `rnk = 1`
+
 **Results and Analysis:**
+
+<img width="418" alt="image" src="https://github.com/user-attachments/assets/1f3254f6-a9c3-42ce-bc9d-d463c546ed2c">
+
+- The top 3 interests are "Luxury Bedding Shoppers", "Solar Energy Researchers" and "Alabama Trip Planners".
 
 **3. What is the average of the average composition for the top 10 interests for each month?**
 
 ```sql
+WITH cte AS 
+	(SELECT *,
+	ROUND((composition/index_value)::numeric , 2) AS avg_composition,
+	RANK() OVER(PARTITION BY month_year 
+				ORDER BY ROUND((composition/index_value)::numeric , 2) DESC) AS rnk
+	FROM interest_removed)
+SELECT month_year,
+ROUND(AVG(avg_composition),2) AS avg_avgcomposition
+FROM cte
+WHERE rnk <= 10
+GROUP BY month_year;
 ```
 
 **Explanation:**
 
+- We can use the first **CTE** from the previous questions to calculate a table with `avg_composition` and the `avg_rnk` for each `month_year`.
+- In the main query, calculate the **AVG** of `avg_composition` and **GROUP BY** the `month_year`. Filter the `cte` table by only those results with a `rnk <= 10`.
+
 **Results and Analysis:**
+
+<img width="244" alt="image" src="https://github.com/user-attachments/assets/768bc4d6-9340-4da0-8a7a-e01ec8e50a27">
+
+- The `month_year` with the highest average of average composition is **October of 2018**.
+- The `month_year` with the lowest average of average composition is **June of 2019**.
 
 **4. What is the 3 month rolling average of the max average composition value from September 2018 to August 2019 and include the previous top ranking interests in the same output shown below.**
 
 ```sql
+WITH cte AS 
+	(SELECT month_year, interest_id, avg_composition
+	FROM avg_composition
+	WHERE rnk = 1)
+SELECT month_year, interest_id, avg_composition,
+ROUND(AVG(avg_composition) 
+	  OVER (ORDER BY month_year ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) 
+	  AS three_month_moving_avg,
+CONCAT(LAG(interest_id) OVER(ORDER BY month_year), ': ', 
+	   LAG(avg_composition) OVER(ORDER BY month_year)) AS one_month_ago,
+CONCAT(LAG(interest_id, 2) OVER(ORDER BY month_year), ': ', 
+	   LAG(avg_composition, 2) OVER(ORDER BY month_year)) AS two_months_ago
+FROM cte
+WHERE month_year BETWEEN '2018-09-01' AND '2019-08-01';
 ```
-
-**Explanation:**
 
 **Results and Analysis:**
 
-
-**5. Provide a possible reason why the max average composition might change from month to month? Could it signal something is not quite right with the overall business model for Fresh Segments?**
-
-```sql
-```
-
-**Explanation:**
-
-**Results and Analysis:**
+<img width="789" alt="image" src="https://github.com/user-attachments/assets/51a96295-c0c1-4eb7-b6c5-ca4b85962fc5">
 
 ---
