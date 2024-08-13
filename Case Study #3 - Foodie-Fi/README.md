@@ -16,7 +16,7 @@ Foodie-Fi is a subscription-based streaming service for food enthusiasts. Our ta
 <img width="500" alt="image" src="https://github.com/user-attachments/assets/5b8e1159-73cd-4196-b2ea-6b9f1ac03c22">
 
 ## Solution
----
+
 **Customer Journey**
 
 Based off the 8 sample customers provided in the sample from the `subscriptions` table, write a brief description about some customer’s onboarding journey.
